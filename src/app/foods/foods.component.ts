@@ -1,9 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { YehApiService } from '../services/yeh-api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Food, FoodMetadataUpdate } from '../models/food.model';
+import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
 interface SimplifiedNutrient {
   label: string;
@@ -25,6 +26,8 @@ interface ImageUploadResponse {
   styleUrls: ['./foods.component.scss']
 })
 export class FoodsComponent implements OnInit {
+  @ViewChild(ImageUploadComponent) imageUploadComponent!: ImageUploadComponent;
+
   searchControl = new FormControl('');
   limitControl = new FormControl(50);  // NEW: Default to 50 results
   yehApprovedControl = new FormControl(false);  // YEH Approved checkbox
@@ -222,12 +225,14 @@ export class FoodsComponent implements OnInit {
            currentYehApproved !== this.originalMetadata.yehApproved;
   }
 
-  // Save metadata to backend
-  saveMetadata(): void {
+  // Save metadata to backend, then upload any staged images
+  async saveMetadata(): Promise<void> {
     if (!this.selectedFood?.id) {
       this.snackBar.open('No food selected', 'Close', { duration: 3000 });
       return;
     }
+
+    const hasImages = this.imageUploadComponent?.hasFilesToUpload;
 
     const update: FoodMetadataUpdate = {};
 
@@ -251,47 +256,58 @@ export class FoodsComponent implements OnInit {
       update.yehApproved = currentYehApproved ?? false;
     }
 
-    // Check if there are any changes to save
-    if (Object.keys(update).length === 0) {
+    const hasMetadataChanges = Object.keys(update).length > 0;
+
+    // Check if there's anything to do at all
+    if (!hasMetadataChanges && !hasImages) {
       this.snackBar.open('No changes to save', 'Close', { duration: 3000 });
       return;
     }
 
     this.isSavingMetadata = true;
 
-    this.foodsService.updateFoodMetadata(this.selectedFood.id, update).subscribe({
-      next: (updatedFood) => {
-        // Update the selected food with response
-        this.selectedFood = updatedFood;
-
-        // Update in the foods array too
-        const index = this.foods.findIndex(f => f.id === updatedFood.id);
-        if (index >= 0) {
-          this.foods[index] = updatedFood;
+    try {
+      // Step 1: Save metadata if changed
+      if (hasMetadataChanges) {
+        const updatedFood = await this.foodsService.updateFoodMetadata(this.selectedFood.id, update).toPromise();
+        if (updatedFood) {
+          this.selectedFood = updatedFood;
+          const index = this.foods.findIndex(f => f.id === updatedFood.id);
+          if (index >= 0) {
+            this.foods[index] = updatedFood;
+          }
+          this.originalMetadata = {
+            shortDescription: updatedFood.shortDescription ?? null,
+            glycemicIndex: updatedFood.glycemicIndex ?? null,
+            glycemicLoad: updatedFood.glycemicLoad ?? null,
+            yehApproved: updatedFood.yehApproved ?? false
+          };
         }
-
-        // Update original values to match saved state
-        this.originalMetadata = {
-          shortDescription: updatedFood.shortDescription ?? null,
-          glycemicIndex: updatedFood.glycemicIndex ?? null,
-          glycemicLoad: updatedFood.glycemicLoad ?? null,
-          yehApproved: updatedFood.yehApproved ?? false
-        };
-
-        this.snackBar.open('Metadata saved successfully', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'top',
-          panelClass: ['info-snackbar']
-        });
-
-        this.isSavingMetadata = false;
-      },
-      error: (error: HttpErrorResponse) => {
-        this.isSavingMetadata = false;
-        this.handleError(error, 'Failed to save metadata');
       }
-    });
+
+      // Step 2: Upload any staged images
+      if (hasImages) {
+        const imageSuccess = await this.imageUploadComponent.uploadImages();
+        if (!imageSuccess) {
+          this.snackBar.open(
+            hasMetadataChanges ? 'Metadata saved, but image upload failed' : 'Image upload failed',
+            'Close', { duration: 5000 }
+          );
+          return;
+        }
+      }
+
+      this.snackBar.open(
+        hasMetadataChanges && hasImages ? 'Metadata and images saved successfully' :
+        hasImages ? 'Images uploaded successfully' : 'Metadata saved successfully',
+        'Close', { duration: 3000, horizontalPosition: 'center', verticalPosition: 'top', panelClass: ['info-snackbar'] }
+      );
+
+    } catch (error: any) {
+      this.handleError(error, 'Failed to save');
+    } finally {
+      this.isSavingMetadata = false;
+    }
   }
 
   // NEW: Handle keyboard navigation in the list

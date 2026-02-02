@@ -193,24 +193,9 @@
 
   </div>
 
-  <!-- Upload and Clear Buttons -->
-  <div class="upload-actions" *ngIf="hasFilesToUpload || hasImagesToClear">
-    <button mat-raised-button
-            color="primary"
-            class="upload-btn"
-            [disabled]="isUploading || !hasFilesToUpload"
-            (click)="uploadImages()">
-      <mat-icon *ngIf="!isUploading">cloud_upload</mat-icon>
-      <mat-spinner *ngIf="isUploading" diameter="20"></mat-spinner>
-      {{ isUploading ? 'Uploading...' : 'Upload' }}
-    </button>
-    <button mat-raised-button
-            color="warn"
-            class="clear-btn"
-            [disabled]="isUploading || !hasImagesToClear"
-            (click)="clearAllImages()">
-      <mat-icon>clear</mat-icon>
-      Clear
-    </button>
+  <!-- Upload status indicator -->
+  <div class="upload-status" *ngIf="isUploading">
+    <mat-spinner diameter="20"></mat-spinner>
+    <span>Uploading images...</span>
   </div>
 </div>

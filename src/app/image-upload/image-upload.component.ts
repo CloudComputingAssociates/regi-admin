@@ -291,17 +291,16 @@ export class ImageUploadComponent implements OnInit, OnChanges {
     this.ingredientsImagePreview = null;
   }
 
-  // Upload images
-  async uploadImages() {
+  // Upload images — called by parent during save flow.
+  // Returns true if there were no images to upload, or all uploads succeeded.
+  async uploadImages(): Promise<boolean> {
     if (!this.nutritionImageFile && !this.productImageFile && !this.ingredientsImageFile) {
-      this.snackBar.open('Please select at least one image to upload', 'Close', { duration: 3000 });
-      return;
+      return true; // nothing to upload is not an error
     }
 
-    // All image uploads require foodId (food must already exist)
-    if ((this.nutritionImageFile || this.ingredientsImageFile || this.productImageFile) && !this.foodId) {
+    if (!this.foodId) {
       this.snackBar.open('No Food ID for image upload', 'Close', { duration: 3000 });
-      return;
+      return false;
     }
 
     this.isUploading = true;
@@ -378,10 +377,13 @@ export class ImageUploadComponent implements OnInit, OnChanges {
         this.snackBar.open(`Upload failed: ${warnings.join('; ')}`, 'Close', { duration: 5000 });
       }
 
+      return response.success;
+
     } catch (error: any) {
       console.error('Upload error:', error);
       const errorMessage = error?.error?.message || error?.message || 'Upload failed. Please try again.';
       this.snackBar.open(`Upload failed: ${errorMessage}`, 'Close', { duration: 5000 });
+      return false;
     } finally {
       this.isUploading = false;
     }
