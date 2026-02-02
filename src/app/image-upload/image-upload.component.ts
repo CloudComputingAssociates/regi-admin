@@ -45,6 +45,9 @@ export class ImageUploadComponent implements OnInit, OnChanges {
   productImagePreview: string | null = null;
   ingredientsImagePreview: string | null = null;
 
+  // Editable filename for product image (display name without extension)
+  productImageDisplayName: string = '';
+
   constructor(
     private foodsService: YehApiService,
     private snackBar: MatSnackBar
@@ -153,49 +156,53 @@ export class ImageUploadComponent implements OnInit, OnChanges {
   }
 
   // Clipboard paste handlers
-  onNutritionPaste(event: ClipboardEvent) {
-    const items = event.clipboardData?.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) {
-          const file = items[i].getAsFile();
-          if (file) {
-            this.handleNutritionFile(file);
-            event.preventDefault();
-          }
-        }
-      }
+  async onNutritionPaste(event: ClipboardEvent) {
+    const file = await this.extractImageFromClipboard(event, 'nutrition-label.png');
+    if (file) {
+      this.handleNutritionFile(file);
+      event.preventDefault();
     }
   }
 
-  onProductPaste(event: ClipboardEvent) {
-    const items = event.clipboardData?.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) {
-          const file = items[i].getAsFile();
-          if (file) {
-            this.handleProductFile(file);
-            event.preventDefault();
-          }
-        }
-      }
+  async onProductPaste(event: ClipboardEvent) {
+    const file = await this.extractImageFromClipboard(event, 'pasted-image.png');
+    if (file) {
+      this.handleProductFile(file);
+      event.preventDefault();
     }
   }
 
-  onIngredientsPaste(event: ClipboardEvent) {
+  async onIngredientsPaste(event: ClipboardEvent) {
+    const file = await this.extractImageFromClipboard(event, 'ingredients.png');
+    if (file) {
+      this.handleIngredientsFile(file);
+      event.preventDefault();
+    }
+  }
+
+  /**
+   * Read clipboard image data into a proper File object.
+   * The raw getAsFile() from clipboard can produce a blob whose data
+   * doesn't transmit reliably via FormData. Reading via arrayBuffer()
+   * forces the bytes into memory so the upload works correctly.
+   */
+  private async extractImageFromClipboard(event: ClipboardEvent, defaultName: string): Promise<File | null> {
     const items = event.clipboardData?.items;
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.startsWith('image/')) {
-          const file = items[i].getAsFile();
-          if (file) {
-            this.handleIngredientsFile(file);
-            event.preventDefault();
-          }
+    if (!items) return null;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const blob = items[i].getAsFile();
+        if (!blob) continue;
+        try {
+          const arrayBuffer = await blob.arrayBuffer();
+          return new File([arrayBuffer], defaultName, { type: 'image/png' });
+        } catch {
+          return blob;
         }
       }
     }
+    return null;
   }
 
   // File handling
@@ -210,6 +217,8 @@ export class ImageUploadComponent implements OnInit, OnChanges {
     if (!this.validateFile(file)) return;
 
     this.productImageFile = file;
+    // Pre-fill display name from the file's name (strip extension)
+    this.productImageDisplayName = file.name.replace(/\.[^/.]+$/, '');
     this.createImagePreview(file, 'product');
   }
 
@@ -260,6 +269,7 @@ export class ImageUploadComponent implements OnInit, OnChanges {
 
   removeProductImage() {
     this.productImageFile = null;
+    this.productImageDisplayName = '';
     this.productImagePreview = this.existingProductImageUrl
       ? this.existingProductImageUrl
       : null;
@@ -275,6 +285,7 @@ export class ImageUploadComponent implements OnInit, OnChanges {
     this.nutritionImageFile = null;
     this.productImageFile = null;
     this.ingredientsImageFile = null;
+    this.productImageDisplayName = '';
     this.nutritionImagePreview = null;
     this.productImagePreview = null;
     this.ingredientsImagePreview = null;

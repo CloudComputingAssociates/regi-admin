@@ -142,6 +142,23 @@ $warning-color: #ff9800;
     }
   }
 
+  .filename-input {
+    margin-top: 8px;
+
+    .filename-field {
+      width: 100%;
+    }
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #666;
+  }
+
   .upload-actions {
     display: flex;
     justify-content: center;
