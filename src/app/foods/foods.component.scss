@@ -42,9 +42,16 @@
 
   .search-btn {
     height: 40px;
-    width: 40px;
-    color: #1976d2;
+    min-width: 40px;
+    max-width: 40px;
+    padding: 0;
     margin-left: -8px;
+    background: #1976d2;
+    color: white;
+
+    .mat-icon {
+      margin: 0;
+    }
   }
 
   .max-btn {
