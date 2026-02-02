@@ -6,15 +6,21 @@
       <input matInput
              [formControl]="searchControl"
              (keyup.enter)="performSearch()"
-             placeholder="Enter food name and press Enter...">
+             placeholder="Enter food name...">
       <mat-spinner *ngIf="isLoading"
                    matSuffix
                    diameter="20">
       </mat-spinner>
     </mat-form-field>
+    <button mat-icon-button
+            class="search-btn"
+            (click)="performSearch()"
+            matTooltip="Search">
+      <mat-icon>keyboard_return</mat-icon>
+    </button>
 
     <mat-form-field appearance="fill" class="limit-field">
-      <mat-label>Result count:</mat-label>
+      <mat-label>Limit</mat-label>
       <input matInput
              type="number"
              [formControl]="limitControl"
@@ -22,7 +28,7 @@
              placeholder="50"
              min="1">
     </mat-form-field>
-    <button mat-raised-button class="max-btn" (click)="setMaxLimit()">MAX</button>
+    <button mat-stroked-button class="max-btn" (click)="setMaxLimit()">Max</button>
   </div>
 
   <!-- YEH Approved checkbox -->
@@ -337,14 +343,13 @@
           </div>
         </div>
 
-        <!-- Image Display Section -->
-        <div class="image-display-section" *ngIf="selectedFood && hasAnyImages()">
-          <h3 class="section-title">Current Images</h3>
+        <!-- Nutrition Image Display (product image shown in upload zone) -->
+        <div class="image-display-section" *ngIf="selectedFood && hasNutritionImage()">
           <div class="images-container">
-            <div class="image-card" *ngIf="hasNutritionImage()">
+            <div class="image-card">
               <div class="image-header">
                 <span class="image-label">Nutrition Facts Label</span>
-                <span class="image-status" 
+                <span class="image-status"
                       [class.status-completed]="nutritionFactsStatus === 'completed'"
                       [class.status-processing]="nutritionFactsStatus === 'processing'"
                       [class.status-pending]="nutritionFactsStatus === 'pending'">
@@ -352,21 +357,9 @@
                 </span>
               </div>
               <div class="image-wrapper">
-                <img [src]="nutritionImageUrl()" 
+                <img [src]="nutritionImageUrl()"
                      alt="Nutrition Facts Label"
                      class="food-image nutrition-image"
-                     loading="lazy">
-              </div>
-            </div>
-
-            <div class="image-card" *ngIf="hasProductImage()">
-              <div class="image-header">
-                <span class="image-label">Product Photo</span>
-              </div>
-              <div class="image-wrapper">
-                <img [src]="productImageUrl()" 
-                     alt="Product Photo"
-                     class="food-image product-image"
                      loading="lazy">
               </div>
             </div>
