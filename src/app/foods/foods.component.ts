@@ -20,6 +20,12 @@ interface ImageUploadResponse {
   message: string;
 }
 
+interface FoodGroup {
+  category: string;
+  foods: { food: Food; flatIndex: number }[];
+  collapsed: boolean;
+}
+
 @Component({
   selector: 'app-foods',
   templateUrl: './foods.component.html',
@@ -48,6 +54,9 @@ export class FoodsComponent implements OnInit {
 
   // Cached nutrient data for the table (recalculated when food or mode changes)
   nutrientTableData: SimplifiedNutrient[] = [];
+
+  // Category grouping for the list display
+  groupedFoods: FoodGroup[] = [];
 
   // Metadata form controls
   shortDescriptionControl = new FormControl<string | null>(null);
@@ -121,6 +130,7 @@ export class FoodsComponent implements OnInit {
         }
 
         this.foods = foodsArray;
+        this.buildGroupedFoods();
         console.log('foods array:', this.foods);
         console.log('foods.length:', this.foods.length);
 
@@ -174,6 +184,30 @@ export class FoodsComponent implements OnInit {
   // Handle YEH Approved checkbox change - trigger search if checked with empty query
   onYehApprovedChange(): void {
     // Optional: auto-search when checkbox is checked
+  }
+
+  // Build grouped foods from the flat foods array, preserving flat indices for selection
+  private buildGroupedFoods(): void {
+    const groupMap = new Map<string, { food: Food; flatIndex: number }[]>();
+
+    this.foods.forEach((food, index) => {
+      const category = food.categoryName || 'Uncategorized';
+      if (!groupMap.has(category)) {
+        groupMap.set(category, []);
+      }
+      groupMap.get(category)!.push({ food, flatIndex: index });
+    });
+
+    this.groupedFoods = Array.from(groupMap.entries()).map(([category, foods]) => ({
+      category,
+      foods,
+      collapsed: false
+    }));
+  }
+
+  // Toggle collapse state for a category group
+  toggleCategoryCollapse(group: FoodGroup): void {
+    group.collapsed = !group.collapsed;
   }
 
   // NEW: Handle food selection from list

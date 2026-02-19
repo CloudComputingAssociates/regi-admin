@@ -8,7 +8,8 @@
       "Bash(mv:*)",
       "Bash(cat:*)",
       "Bash(md5sum:*)",
-      "Bash(npx sass:*)"
+      "Bash(npx sass:*)",
+      "Bash(go build:*)"
     ],
     "deny": [],
     "ask": []

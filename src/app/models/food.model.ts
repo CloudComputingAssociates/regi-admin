@@ -6,6 +6,8 @@ export interface Food {
   glycemicIndex?: number | null;
   glycemicLoad?: number | null;
   yehApproved?: boolean;
+  categoryName?: string | null;
+  subCategoryName?: string | null;
   nutritionFacts?: NutritionFacts;
   servingSizeMultiplicand?: number;
   brandInfo?: BrandInfo;

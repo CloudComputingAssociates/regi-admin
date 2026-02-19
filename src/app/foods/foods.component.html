@@ -43,34 +43,44 @@
     <!-- Left sidebar: Results list with selection controls -->
     <div class="results-sidebar">
 
-      <!-- Food list with thumbnails -->
+      <!-- Food list grouped by category -->
       <mat-selection-list #foodList
                           [multiple]="false"
                           (selectionChange)="onFoodSelected($event.options[0]?.value)"
                           (keydown)="onListKeydown($event, foodList)">
-        <mat-list-option *ngFor="let food of foods; let i = index"
-                         [value]="i"
-                         [selected]="i === selectedIndex"
-                         [matTooltip]="food?.description || ''"
-                         matTooltipPosition="right"
-                         class="food-list-item">
-          <div class="food-item-content">
-            <!-- Thumbnail image or placeholder -->
-            <div class="food-thumbnail">
-              <img *ngIf="food?.foodImageThumbnail"
-                   [src]="food.foodImageThumbnail"
-                   alt="Product thumbnail"
-                   class="thumbnail-img">
-              <div *ngIf="!food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
-            </div>
-            <!-- Food description -->
-            <span class="food-description">
-              {{ truncateDescription(food?.shortDescription || food?.description) }}
-            </span>
-            <!-- Food ID for DB reference -->
-            <span class="food-id">{{ food?.id }}</span>
+        <ng-container *ngFor="let group of groupedFoods">
+          <!-- Category header (non-selectable) -->
+          <div class="category-header" (click)="$event.stopPropagation(); toggleCategoryCollapse(group)">
+            <mat-icon class="collapse-icon" [class.collapsed]="group.collapsed">expand_more</mat-icon>
+            <span class="category-name">{{ group.category }}</span>
+            <span class="category-count">{{ group.foods.length }}</span>
           </div>
-        </mat-list-option>
+          <!-- Food items within category -->
+          <mat-list-option *ngFor="let item of group.foods"
+                           [value]="item.flatIndex"
+                           [selected]="item.flatIndex === selectedIndex"
+                           [matTooltip]="item.food?.description || ''"
+                           matTooltipPosition="right"
+                           [style.display]="group.collapsed ? 'none' : null"
+                           class="food-list-item">
+            <div class="food-item-content">
+              <!-- Thumbnail image or placeholder -->
+              <div class="food-thumbnail">
+                <img *ngIf="item.food?.foodImageThumbnail"
+                     [src]="item.food.foodImageThumbnail"
+                     alt="Product thumbnail"
+                     class="thumbnail-img">
+                <div *ngIf="!item.food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
+              </div>
+              <!-- Food description -->
+              <span class="food-description">
+                {{ truncateDescription(item.food?.shortDescription || item.food?.description) }}
+              </span>
+              <!-- Food ID for DB reference -->
+              <span class="food-id">{{ item.food?.id }}</span>
+            </div>
+          </mat-list-option>
+        </ng-container>
       </mat-selection-list>
     </div>
 

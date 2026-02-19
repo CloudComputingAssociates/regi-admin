@@ -137,6 +137,49 @@
     padding: 0;
     flex: 1;
 
+    // Category group header (non-selectable separator)
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: #e0e0e0;
+      font-size: 12px;
+      font-weight: 600;
+      color: #444;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+
+      &:hover {
+        background: #d5d5d5;
+      }
+
+      .collapse-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        transition: transform 0.2s ease;
+
+        &.collapsed {
+          transform: rotate(-90deg);
+        }
+      }
+
+      .category-name {
+        flex: 1;
+      }
+
+      .category-count {
+        font-size: 11px;
+        font-weight: 400;
+        color: #777;
+      }
+    }
+
     mat-list-option {
       font-size: 11px;  // Much smaller font
       height: auto;     // Auto height for content
