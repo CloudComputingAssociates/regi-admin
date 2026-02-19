@@ -65,7 +65,7 @@
             </div>
             <!-- Food description -->
             <span class="food-description">
-              {{ truncateDescription(food?.description) }}
+              {{ truncateDescription(food?.shortDescription || food?.description) }}
             </span>
             <!-- Food ID for DB reference -->
             <span class="food-id">{{ food?.id }}</span>

@@ -197,8 +197,11 @@
 
     .food-description {
       flex: 1;
+      min-width: 0;
       font-size: 12px;
       line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       @media (max-width: $mobile-breakpoint) {
         font-size: 11px;
@@ -225,7 +228,8 @@
 
     .mdc-list-item__content {
       padding-left: 16px !important;
-      padding-right: 16px !important;
+      padding-right: 8px !important;
+      overflow: visible !important;
     }
   }
 }
