@@ -186,9 +186,20 @@ export class FoodsComponent implements OnInit {
     // Optional: auto-search when checkbox is checked
   }
 
+  // Predefined category display order (always shown, even if empty)
+  private readonly CATEGORY_ORDER = [
+    'Protein', 'Fat', 'Dairy', 'Vegetable', 'Carbohydrate',
+    'Fruit', 'Processed', 'Beverage', 'Condiment'
+  ];
+
   // Build grouped foods from the flat foods array, preserving flat indices for selection
   private buildGroupedFoods(): void {
     const groupMap = new Map<string, { food: Food; flatIndex: number }[]>();
+
+    // Initialize all predefined categories (ensures they always appear)
+    for (const cat of this.CATEGORY_ORDER) {
+      groupMap.set(cat, []);
+    }
 
     this.foods.forEach((food, index) => {
       const category = food.categoryName || 'Uncategorized';
@@ -198,11 +209,21 @@ export class FoodsComponent implements OnInit {
       groupMap.get(category)!.push({ food, flatIndex: index });
     });
 
-    this.groupedFoods = Array.from(groupMap.entries()).map(([category, foods]) => ({
-      category,
-      foods,
-      collapsed: false
-    }));
+    // Build in predefined order first, then any unexpected categories
+    const orderedCategories = [...this.CATEGORY_ORDER];
+    for (const key of groupMap.keys()) {
+      if (!orderedCategories.includes(key)) {
+        orderedCategories.push(key);
+      }
+    }
+
+    this.groupedFoods = orderedCategories
+      .filter(cat => groupMap.has(cat))
+      .map(category => ({
+        category,
+        foods: groupMap.get(category)!,
+        collapsed: false
+      }));
   }
 
   // Toggle collapse state for a category group
