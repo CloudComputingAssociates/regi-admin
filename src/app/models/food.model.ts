@@ -10,6 +10,7 @@ export interface Food {
   subCategoryName?: string | null;
   nutritionFacts?: NutritionFacts;
   servingSizeMultiplicand?: number;
+  servingUnit?: string | null;
   brandInfo?: BrandInfo;
   nutritionFactsImage?: string;
   foodImage?: string;
@@ -22,6 +23,9 @@ export interface FoodMetadataUpdate {
   glycemicIndex?: number | null;
   glycemicLoad?: number | null;
   yehApproved?: boolean;
+  servingSizeG?: number | null;
+  servingSizeMultiplicand?: number | null;
+  servingUnit?: string | null;
 }
 
 export interface NutritionFacts {
