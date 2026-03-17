@@ -21,6 +21,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSelectModule } from '@angular/material/select';
 
 import { AppComponent } from './app.component';
 import { AuthModule } from '@auth0/auth0-angular'
@@ -57,6 +58,7 @@ import { ImageUploadComponent } from './image-upload/image-upload.component';
     MatTooltipModule,
     MatIconModule,
     MatCheckboxModule,
+    MatSelectModule,
     UriListComponent,
     AuthModule.forRoot({
       domain: environment.auth0.domain,

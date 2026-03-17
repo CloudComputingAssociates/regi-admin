@@ -63,14 +63,20 @@ export class FoodsComponent implements OnInit {
   glycemicIndexControl = new FormControl<number | null>(null);
   glycemicLoadControl = new FormControl<number | null>(null);
   yehApprovedMetadataControl = new FormControl<boolean>(false);
+  servingUnitControl = new FormControl<string | null>(null);
+  servingGramsPerUnitControl = new FormControl<number | null>(null);
   isSavingMetadata = false;
 
+  readonly servingUnitOptions = ['whole', 'cup', 'tbsp', 'tsp', 'oz', 'g'];
+
   // Track original values to detect changes
-  private originalMetadata: { shortDescription: string | null; glycemicIndex: number | null; glycemicLoad: number | null; yehApproved: boolean } = {
+  private originalMetadata: { shortDescription: string | null; glycemicIndex: number | null; glycemicLoad: number | null; yehApproved: boolean; servingUnit: string | null; servingGramsPerUnit: number | null } = {
     shortDescription: null,
     glycemicIndex: null,
     glycemicLoad: null,
-    yehApproved: false
+    yehApproved: false,
+    servingUnit: null,
+    servingGramsPerUnit: null
   };
 
   constructor(
@@ -248,13 +254,17 @@ export class FoodsComponent implements OnInit {
     this.glycemicIndexControl.setValue(food.glycemicIndex ?? null);
     this.glycemicLoadControl.setValue(food.glycemicLoad ?? null);
     this.yehApprovedMetadataControl.setValue(food.yehApproved ?? false);
+    this.servingUnitControl.setValue(food.servingUnit ?? null);
+    this.servingGramsPerUnitControl.setValue(food.servingGramsPerUnit ?? null);
 
     // Store original values for change detection
     this.originalMetadata = {
       shortDescription: food.shortDescription ?? null,
       glycemicIndex: food.glycemicIndex ?? null,
       glycemicLoad: food.glycemicLoad ?? null,
-      yehApproved: food.yehApproved ?? false
+      yehApproved: food.yehApproved ?? false,
+      servingUnit: food.servingUnit ?? null,
+      servingGramsPerUnit: food.servingGramsPerUnit ?? null
     };
   }
 
@@ -264,7 +274,9 @@ export class FoodsComponent implements OnInit {
     this.glycemicIndexControl.setValue(null);
     this.glycemicLoadControl.setValue(null);
     this.yehApprovedMetadataControl.setValue(false);
-    this.originalMetadata = { shortDescription: null, glycemicIndex: null, glycemicLoad: null, yehApproved: false };
+    this.servingUnitControl.setValue(null);
+    this.servingGramsPerUnitControl.setValue(null);
+    this.originalMetadata = { shortDescription: null, glycemicIndex: null, glycemicLoad: null, yehApproved: false, servingUnit: null, servingGramsPerUnit: null };
   }
 
   // Check if metadata has been modified
@@ -274,10 +286,15 @@ export class FoodsComponent implements OnInit {
     const currentLoad = this.glycemicLoadControl.value;
     const currentYehApproved = this.yehApprovedMetadataControl.value;
 
+    const currentServingUnit = this.servingUnitControl.value;
+    const currentGramsPerUnit = this.servingGramsPerUnitControl.value;
+
     return currentShortDesc !== this.originalMetadata.shortDescription ||
            currentGI !== this.originalMetadata.glycemicIndex ||
            currentLoad !== this.originalMetadata.glycemicLoad ||
-           currentYehApproved !== this.originalMetadata.yehApproved;
+           currentYehApproved !== this.originalMetadata.yehApproved ||
+           currentServingUnit !== this.originalMetadata.servingUnit ||
+           currentGramsPerUnit !== this.originalMetadata.servingGramsPerUnit;
   }
 
   // Save metadata to backend, then upload any staged images
@@ -310,6 +327,14 @@ export class FoodsComponent implements OnInit {
     if (currentYehApproved !== this.originalMetadata.yehApproved) {
       update.yehApproved = currentYehApproved ?? false;
     }
+    const currentServingUnit = this.servingUnitControl.value;
+    const currentGramsPerUnit = this.servingGramsPerUnitControl.value;
+    if (currentServingUnit !== this.originalMetadata.servingUnit) {
+      update.servingUnit = currentServingUnit === '' ? null : currentServingUnit;
+    }
+    if (currentGramsPerUnit !== this.originalMetadata.servingGramsPerUnit) {
+      update.servingGramsPerUnit = currentGramsPerUnit;
+    }
 
     const hasMetadataChanges = Object.keys(update).length > 0;
 
@@ -335,7 +360,9 @@ export class FoodsComponent implements OnInit {
             shortDescription: updatedFood.shortDescription ?? null,
             glycemicIndex: updatedFood.glycemicIndex ?? null,
             glycemicLoad: updatedFood.glycemicLoad ?? null,
-            yehApproved: updatedFood.yehApproved ?? false
+            yehApproved: updatedFood.yehApproved ?? false,
+            servingUnit: updatedFood.servingUnit ?? null,
+            servingGramsPerUnit: updatedFood.servingGramsPerUnit ?? null
           };
         }
       }

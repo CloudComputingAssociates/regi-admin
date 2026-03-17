@@ -406,6 +406,26 @@
         }
       }
 
+      .serving-config-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+
+        .serving-unit-field {
+          width: 140px;
+          flex-shrink: 0;
+        }
+
+        .grams-per-unit-field {
+          width: 120px;
+          flex-shrink: 0;
+
+          input {
+            font-size: 13px;
+          }
+        }
+      }
+
       .nutrient-table {
         width: 100%;
         margin-top: 16px;

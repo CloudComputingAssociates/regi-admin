@@ -11,6 +11,7 @@ export interface Food {
   nutritionFacts?: NutritionFacts;
   servingSizeMultiplicand?: number;
   servingUnit?: string | null;
+  servingGramsPerUnit?: number | null;
   brandInfo?: BrandInfo;
   nutritionFactsImage?: string;
   foodImage?: string;
@@ -26,6 +27,7 @@ export interface FoodMetadataUpdate {
   servingSizeG?: number | null;
   servingSizeMultiplicand?: number | null;
   servingUnit?: string | null;
+  servingGramsPerUnit?: number | null;
 }
 
 export interface NutritionFacts {
