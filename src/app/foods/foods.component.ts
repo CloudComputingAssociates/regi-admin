@@ -45,7 +45,7 @@ export class FoodsComponent implements OnInit {
   selectedFoodIds: Set<number> = new Set<number>();  // Uses Set for O(1) lookup
 
   // MAX limit constant
-  private readonly MAX_LIMIT = 200;
+  private readonly MAX_LIMIT = 300;
 
   isLoading = false;
   displayedColumns: string[] = ['label', 'value', 'unit'];
