@@ -67,7 +67,7 @@ export class FoodsComponent implements OnInit {
   servingGramsPerUnitControl = new FormControl<number | null>(null);
   isSavingMetadata = false;
 
-  readonly servingUnitOptions = ['whole', 'cup', 'tbsp', 'tsp', 'oz', 'g'];
+  readonly servingUnitOptions = ['whole', 'cup', 'tbsp', 'tsp', 'oz', 'lbs', 'g'];
 
   // Track original values to detect changes
   private originalMetadata: { shortDescription: string | null; glycemicIndex: number | null; glycemicLoad: number | null; yehApproved: boolean; servingUnit: string | null; servingGramsPerUnit: number | null } = {
