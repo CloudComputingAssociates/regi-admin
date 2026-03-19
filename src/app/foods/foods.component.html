@@ -117,6 +117,13 @@
                         [disabled]="isSavingMetadata || !hasMetadataChanges()">
                   {{isSavingMetadata ? 'Saving...' : 'Save'}}
                 </button>
+                <button mat-stroked-button
+                        class="fatsecret-btn"
+                        (click)="openFatSecretCompare()"
+                        [disabled]="isLoadingCompare || !selectedFood"
+                        matTooltip="Compare with FatSecret data">
+                  {{isLoadingCompare ? 'Loading...' : 'FatSecret'}}
+                </button>
               </div>
               <!-- Row 2: YEH Approved checkbox -->
               <div class="yeh-approved-metadata-row">
@@ -406,7 +413,7 @@
         </app-uri-list>
 
         <!-- Image Upload Component -->
-        <app-image-upload 
+        <app-image-upload
           [foodId]="selectedFood?.id"
           [foodDescription]="selectedFood?.description"
           [existingNutritionImageUrl]="selectedFood?.nutritionFactsImage"
@@ -419,3 +426,11 @@
     </div>
   </div>
 </div>
+
+<!-- FatSecret Compare Overlay -->
+<app-fatsecret-compare
+  *ngIf="showFatSecretCompare && fatSecretCompareData"
+  [data]="fatSecretCompareData"
+  (overwrite)="onFatSecretOverwrite($event)"
+  (close)="closeFatSecretCompare()">
+</app-fatsecret-compare>

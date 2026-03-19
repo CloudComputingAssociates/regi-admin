@@ -365,6 +365,17 @@
           }
         }
 
+        .fatsecret-btn {
+          height: 56px;
+          min-width: 80px;
+          flex-shrink: 0;
+          font-size: 12px;
+
+          &:disabled {
+            opacity: 0.6;
+          }
+        }
+
         @media (max-width: $mobile-breakpoint) {
           flex-wrap: wrap;
 

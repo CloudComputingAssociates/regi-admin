@@ -30,13 +30,15 @@ import { FoodsComponent } from './foods/foods.component';
 import { YehApiService } from './services/yeh-api.service';
 import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
+import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     FoodsComponent,
-    ImageUploadComponent  // Added ImageUploadComponent
+    ImageUploadComponent,
+    FatsecretCompareComponent
   ],
   imports: [
     BrowserModule,

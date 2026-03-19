@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { YehApiService } from '../services/yeh-api.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Food, FoodMetadataUpdate } from '../models/food.model';
+import { Food, FoodMetadataUpdate, FatSecretCompareResponse } from '../models/food.model';
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
 interface SimplifiedNutrient {
@@ -66,6 +66,9 @@ export class FoodsComponent implements OnInit {
   servingUnitControl = new FormControl<string | null>(null);
   servingGramsPerUnitControl = new FormControl<number | null>(null);
   isSavingMetadata = false;
+  isLoadingCompare = false;
+  showFatSecretCompare = false;
+  fatSecretCompareData: FatSecretCompareResponse | null = null;
 
   readonly servingUnitOptions = ['whole', 'cup', 'tbsp', 'tsp', 'oz', 'lbs', 'g'];
 
@@ -771,6 +774,60 @@ export class FoodsComponent implements OnInit {
       horizontalPosition: 'center',
       verticalPosition: 'top',
       panelClass: ['info-snackbar']
+    });
+  }
+
+  // ========================================
+  // FATSECRET COMPARE / OVERWRITE
+  // ========================================
+
+  openFatSecretCompare(): void {
+    if (!this.selectedFood?.id) return;
+
+    this.isLoadingCompare = true;
+    this.foodsService.compareFatSecret(this.selectedFood.id).subscribe({
+      next: (data) => {
+        this.fatSecretCompareData = data;
+        this.showFatSecretCompare = true;
+        this.isLoadingCompare = false;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isLoadingCompare = false;
+        this.handleError(error, 'FatSecret compare failed');
+      }
+    });
+  }
+
+  closeFatSecretCompare(): void {
+    this.showFatSecretCompare = false;
+    this.fatSecretCompareData = null;
+  }
+
+  onFatSecretOverwrite(event: { fatsecretFoodId: string; selectedServingId: string }): void {
+    if (!this.selectedFood?.id) return;
+
+    this.foodsService.overwriteFromFatSecret(this.selectedFood.id, event).subscribe({
+      next: (updatedFood) => {
+        // Update the food in our list and detail view
+        this.selectedFood = updatedFood;
+        const index = this.foods.findIndex(f => f.id === updatedFood.id);
+        if (index >= 0) {
+          this.foods[index] = updatedFood;
+        }
+        this.populateMetadataFields(updatedFood);
+        this.updateNutrientTableData();
+        this.closeFatSecretCompare();
+
+        this.snackBar.open('Food overwritten from FatSecret successfully', 'Close', {
+          duration: 5000,
+          horizontalPosition: 'center',
+          verticalPosition: 'top',
+          panelClass: ['info-snackbar']
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.handleError(error, 'FatSecret overwrite failed');
+      }
     });
   }
 }

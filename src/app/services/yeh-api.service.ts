@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Food, FoodMetadataUpdate } from '../models/food.model';
+import { Food, FoodMetadataUpdate, FatSecretCompareResponse, FatSecretOverwriteRequest } from '../models/food.model';
 
 interface NutritionUploadResponse {
   success: boolean;
@@ -72,6 +72,18 @@ export class YehApiService {
   // Uses PATCH /api/foods/{id}
   updateFoodMetadata(foodId: number, update: FoodMetadataUpdate): Observable<Food> {
     return this.http.patch<Food>(`${this.baseUrl}/foods/${foodId}`, update);
+  }
+
+  // ========================================
+  // FATSECRET COMPARE / OVERWRITE
+  // ========================================
+
+  compareFatSecret(foodId: number): Observable<FatSecretCompareResponse> {
+    return this.http.get<FatSecretCompareResponse>(`${this.baseUrl}/foods/${foodId}/fatsecret-compare`);
+  }
+
+  overwriteFromFatSecret(foodId: number, req: FatSecretOverwriteRequest): Observable<Food> {
+    return this.http.post<Food>(`${this.baseUrl}/foods/${foodId}/fatsecret-overwrite`, req);
   }
 
   // ========================================

@@ -56,3 +56,47 @@ export interface BrandInfo {
   nutritionSiteCandidates?: string[];
   productImageSiteCandidates?: string[];
 }
+
+// ========================================
+// FATSECRET COMPARE / OVERWRITE
+// ========================================
+
+export interface FatSecretCompareServing {
+  servingId: string;
+  servingDescription: string;
+  measurementDescription: string;
+  mappedUnit: string;
+  gramsPerUnit: number;
+  numberOfUnits: number;
+  metricServingAmountG: number;
+  isDefault: boolean;
+  calories: number;
+  proteinG: number;
+  totalFatG: number;
+  totalCarbG: number;
+  dietaryFiberG: number;
+  sodiumMG: number;
+}
+
+export interface FatSecretCompareFood {
+  fatsecretFoodId: string;
+  foodName: string;
+  foodType: string;
+  brandName?: string;
+  servings: FatSecretCompareServing[];
+  recommendedServingIndex: number;
+  normalized100g: NutritionFacts;
+  summaryCalsPer100g: number;
+  summaryProteinPer100g: number;
+}
+
+export interface FatSecretCompareResponse {
+  currentFood: Food;
+  matches: FatSecretCompareFood[];
+  recommendedMatchIndex: number;
+}
+
+export interface FatSecretOverwriteRequest {
+  fatsecretFoodId: string;
+  selectedServingId: string;
+}
