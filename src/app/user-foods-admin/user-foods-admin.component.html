@@ -5,19 +5,23 @@
       <mat-label>Name</mat-label>
       <input matInput
              [formControl]="nameSearchControl"
-             (keyup.enter)="searchUsers()"
+             (keyup.enter)="applyFilters()"
              placeholder="Last or full name...">
     </mat-form-field>
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Email</mat-label>
       <input matInput
              [formControl]="emailSearchControl"
-             (keyup.enter)="searchUsers()"
+             (keyup.enter)="applyFilters()"
              placeholder="Email address...">
     </mat-form-field>
-    <button mat-mini-fab color="primary" class="search-btn" (click)="searchUsers()" [disabled]="isSearchingUsers">
-      <mat-icon>arrow_forward</mat-icon>
+    <button mat-mini-fab class="apply-btn" (click)="applyFilters()" [disabled]="isSearchingUsers">
+      <mat-icon>check</mat-icon>
     </button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Filter by:</span>
+    <mat-checkbox [formControl]="communityCandidateFilterControl">Community Candidate</mat-checkbox>
   </div>
 
   <!-- User Results List -->
@@ -118,8 +122,8 @@
 
               <!-- Row 2: Community Share checkboxes -->
               <div class="share-row">
-                <mat-checkbox [checked]="selectedFood?.shareCandidate" disabled>Community Candidate</mat-checkbox>
-                <mat-checkbox [formControl]="shareApprovedControl">Community Share Approved</mat-checkbox>
+                <mat-checkbox [formControl]="shareCandidateControl">Community Candidate</mat-checkbox>
+                <mat-checkbox [formControl]="shareApprovedControl" (change)="onShareApprovedChange()">Community Share Approved</mat-checkbox>
               </div>
 
               <!-- Row 3: Short Description (full width) -->

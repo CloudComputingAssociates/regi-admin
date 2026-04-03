@@ -47,10 +47,14 @@ export class UserFoodsAdminComponent {
   showingAllNutrients = false;
   showPerServing = true;
 
+  // Filter controls
+  communityCandidateFilterControl = new FormControl<boolean>(false);
+
   // Metadata form controls (mirrors Foods tab)
   shortDescriptionControl = new FormControl<string | null>(null);
   glycemicIndexControl = new FormControl<number | null>(null);
   glycemicLoadControl = new FormControl<number | null>(null);
+  shareCandidateControl = new FormControl<boolean>(false);
   shareApprovedControl = new FormControl<boolean>(false);
   servingUnitControl = new FormControl<string | null>(null);
   servingGramsPerUnitControl = new FormControl<number | null>(null);
@@ -63,6 +67,7 @@ export class UserFoodsAdminComponent {
     shortDescription: null as string | null,
     glycemicIndex: null as number | null,
     glycemicLoad: null as number | null,
+    shareCandidate: false,
     shareApproved: false,
     servingUnit: null as string | null,
     servingGramsPerUnit: null as number | null
@@ -83,15 +88,23 @@ export class UserFoodsAdminComponent {
   // USER SEARCH
   // ========================================
 
-  searchUsers(): void {
+  applyFilters(): void {
     const name = this.nameSearchControl.value?.trim() || '';
     const email = this.emailSearchControl.value?.trim() || '';
+    const communityCandidateOnly = this.communityCandidateFilterControl.value;
 
-    if (!name && !email) {
-      this.snackBar.open('Enter a name or email to search', 'Close', { duration: 3000 });
+    // If only community candidate filter is checked (no name/email), load all candidates
+    if (communityCandidateOnly && !name && !email) {
+      this.loadShareCandidates();
       return;
     }
 
+    if (!name && !email) {
+      this.snackBar.open('Enter a name or email to search, or check Community Candidate', 'Close', { duration: 3000 });
+      return;
+    }
+
+    // Search users, then optionally filter their foods by shareCandidate
     this.isSearchingUsers = true;
     this.apiService.searchAdminUsers(name || undefined, email || undefined).subscribe({
       next: (result) => {
@@ -109,6 +122,37 @@ export class UserFoodsAdminComponent {
     });
   }
 
+  private loadShareCandidates(): void {
+    this.isLoadingFoods = true;
+    this.selectedUser = null;
+    this.userResults = [];
+    this.foods = [];
+    this.selectedFood = null;
+
+    this.apiService.getShareCandidates().subscribe({
+      next: (result) => {
+        this.foods = result.foods || result || [];
+        this.buildGroupedFoods();
+        this.isLoadingFoods = false;
+
+        this.snackBar.open(`${this.foods.length} community candidates`, 'Close', {
+          duration: 3000, horizontalPosition: 'center', verticalPosition: 'top'
+        });
+
+        if (this.foods.length > 0) {
+          this.selectedIndex = 0;
+          this.selectedFood = this.foods[0];
+          this.populateMetadataFields(this.selectedFood);
+          this.updateNutrientTableData();
+        }
+      },
+      error: () => {
+        this.isLoadingFoods = false;
+        this.snackBar.open('Failed to load candidates', 'Close', { duration: 5000 });
+      }
+    });
+  }
+
   selectUser(user: AdminUser): void {
     this.selectedUser = user;
     this.loadUserFoods(user.id);
@@ -122,7 +166,14 @@ export class UserFoodsAdminComponent {
 
     this.apiService.getAdminUserFoods(userId).subscribe({
       next: (result) => {
-        this.foods = result.foods || [];
+        let foodsArray = result.foods || [];
+
+        // Filter by community candidate if checkbox is checked
+        if (this.communityCandidateFilterControl.value) {
+          foodsArray = foodsArray.filter((f: any) => f.shareCandidate);
+        }
+
+        this.foods = foodsArray;
         this.buildGroupedFoods();
         this.isLoadingFoods = false;
 
@@ -200,6 +251,7 @@ export class UserFoodsAdminComponent {
     this.shortDescriptionControl.setValue(food.shortDescription ?? null);
     this.glycemicIndexControl.setValue(food.glycemicIndex ?? null);
     this.glycemicLoadControl.setValue(food.glycemicLoad ?? null);
+    this.shareCandidateControl.setValue(food.shareCandidate ?? false);
     this.shareApprovedControl.setValue(food.shareApproved ?? false);
     this.servingUnitControl.setValue(food.servingUnit ?? null);
     this.servingGramsPerUnitControl.setValue(food.servingGramsPerUnit ?? null);
@@ -208,16 +260,24 @@ export class UserFoodsAdminComponent {
       shortDescription: food.shortDescription ?? null,
       glycemicIndex: food.glycemicIndex ?? null,
       glycemicLoad: food.glycemicLoad ?? null,
+      shareCandidate: food.shareCandidate ?? false,
       shareApproved: food.shareApproved ?? false,
       servingUnit: food.servingUnit ?? null,
       servingGramsPerUnit: food.servingGramsPerUnit ?? null
     };
   }
 
+  onShareApprovedChange(): void {
+    if (this.shareApprovedControl.value) {
+      this.shareCandidateControl.setValue(false);
+    }
+  }
+
   hasMetadataChanges(): boolean {
     return this.shortDescriptionControl.value !== this.originalMetadata.shortDescription ||
            this.glycemicIndexControl.value !== this.originalMetadata.glycemicIndex ||
            this.glycemicLoadControl.value !== this.originalMetadata.glycemicLoad ||
+           this.shareCandidateControl.value !== this.originalMetadata.shareCandidate ||
            this.shareApprovedControl.value !== this.originalMetadata.shareApproved ||
            this.servingUnitControl.value !== this.originalMetadata.servingUnit ||
            this.servingGramsPerUnitControl.value !== this.originalMetadata.servingGramsPerUnit;
@@ -247,6 +307,10 @@ export class UserFoodsAdminComponent {
     }
     if (this.servingGramsPerUnitControl.value !== this.originalMetadata.servingGramsPerUnit) {
       update.servingGramsPerUnit = this.servingGramsPerUnitControl.value;
+    }
+
+    if (this.shareCandidateControl.value !== this.originalMetadata.shareCandidate) {
+      update.shareCandidate = this.shareCandidateControl.value;
     }
 
     // Handle share approval separately via the approve endpoint
@@ -293,6 +357,7 @@ export class UserFoodsAdminComponent {
         shortDescription: this.shortDescriptionControl.value,
         glycemicIndex: this.glycemicIndexControl.value,
         glycemicLoad: this.glycemicLoadControl.value,
+        shareCandidate: this.shareCandidateControl.value ?? false,
         shareApproved: this.shareApprovedControl.value ?? false,
         servingUnit: this.servingUnitControl.value,
         servingGramsPerUnit: this.servingGramsPerUnitControl.value

@@ -17,8 +17,23 @@
     max-width: 250px;
   }
 
-  .search-btn {
+  .apply-btn {
     margin-top: -12px;
+    background-color: #4caf50 !important;
+    color: white !important;
+  }
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .filter-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
   }
 }
 

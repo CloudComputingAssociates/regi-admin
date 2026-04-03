@@ -162,4 +162,9 @@ export class YehApiService {
   setShareApproval(userFoodId: number, approved: boolean): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/userfoods/${userFoodId}/approve`, { approved });
   }
+
+  // Get all share candidates (ShareCandidate=1, pending review)
+  getShareCandidates(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/userfoods/candidates`);
+  }
 }
