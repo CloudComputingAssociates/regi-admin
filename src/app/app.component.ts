@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -10,21 +11,24 @@ import { map } from 'rxjs/operators';
 export class AppComponent {
   title = 'Foods App';
 
-  isAuthenticated$ = this.auth.isAuthenticated$;
+  constructor(public auth: AuthService) {}
 
   // Check for Admin role in the access token's custom claims
-  isAdmin$ = this.auth.getAccessTokenSilently().pipe(
-    map(token => {
-      try {
-        // Decode JWT payload (base64url)
-        const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        const roles: string[] = payload['https://yehapi.cloudcomputingassociates.net/roles'] || [];
-        return roles.includes('Admin');
-      } catch {
-        return false;
-      }
+  isAdmin$: Observable<boolean> = this.auth.isAuthenticated$.pipe(
+    switchMap(isAuth => {
+      if (!isAuth) return of(false);
+      return this.auth.getAccessTokenSilently().pipe(
+        map(token => {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+            const roles: string[] = payload['https://yehapi.cloudcomputingassociates.net/roles'] || [];
+            return roles.includes('Admin');
+          } catch {
+            return false;
+          }
+        }),
+        catchError(() => of(false))
+      );
     })
   );
-
-  constructor(public auth: AuthService) {}
 }

@@ -6,9 +6,7 @@
 </div>
 
 <div class="content" role="main">
-  <!-- Must be authenticated -->
-  <ng-container *ngIf="isAuthenticated$ | async; else notAuthenticated">
-    <!-- Must have Admin role -->
+  <ng-container *ngIf="auth.isAuthenticated$ | async; else notAuthenticated">
     <ng-container *ngIf="isAdmin$ | async; else notAuthorized">
       <mat-tab-group class="main-tabs" animationDuration="0ms">
         <mat-tab label="Foods">
@@ -33,7 +31,6 @@
     </div>
   </ng-template>
 
-  <!-- Footer -->
   <footer>
     2025 Cloud Computing Associates, LLC Marty Mazurik
   </footer>
