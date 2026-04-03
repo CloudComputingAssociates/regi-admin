@@ -152,4 +152,14 @@ export class YehApiService {
   getAdminUserFoods(userId: number): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/admin/userfoods/by-user/${userId}`);
   }
+
+  // Update a user food's metadata (admin, uses existing PUT endpoint)
+  updateAdminUserFood(userFoodId: number, update: any): Observable<any> {
+    return this.http.put<any>(`${this.baseUrl}/userfoods/${userFoodId}`, update);
+  }
+
+  // Approve or reject a share candidate
+  setShareApproval(userFoodId: number, approved: boolean): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/userfoods/${userFoodId}/approve`, { approved });
+  }
 }

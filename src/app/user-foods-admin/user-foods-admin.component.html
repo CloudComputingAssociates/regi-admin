@@ -93,22 +93,56 @@
         <div class="panel-content">
           <div class="nutrition-section">
             <div class="main-nutrients">
-              <!-- Metadata row -->
+              <!-- Row 1: Food ID, GI, Load, Save -->
               <div class="metadata-row">
                 <mat-form-field appearance="outline" class="food-id-field" floatLabel="always">
                   <mat-label>Food ID</mat-label>
                   <input matInput [value]="selectedFood?.id" readonly>
                 </mat-form-field>
-                <div class="share-status">
-                  <mat-checkbox [checked]="selectedFood?.shareCandidate" disabled>Community Candidate</mat-checkbox>
-                  <mat-checkbox [checked]="selectedFood?.shareApproved" disabled>Community Share Approved</mat-checkbox>
-                </div>
+                <mat-form-field appearance="outline" class="gi-field" floatLabel="always">
+                  <mat-label>GI</mat-label>
+                  <input matInput type="number" [formControl]="glycemicIndexControl">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="load-field" floatLabel="always">
+                  <mat-label>Load</mat-label>
+                  <input matInput type="number" [formControl]="glycemicLoadControl">
+                </mat-form-field>
+                <button mat-raised-button
+                        color="primary"
+                        class="save-metadata-btn"
+                        (click)="saveMetadata()"
+                        [disabled]="isSavingMetadata || (!hasMetadataChanges() && !imageUploadComponent?.hasFilesToUpload)">
+                  {{isSavingMetadata ? 'Saving...' : 'Save'}}
+                </button>
               </div>
 
-              <!-- Short Description -->
-              <div class="short-desc-row" *ngIf="selectedFood?.shortDescription">
-                <span class="short-desc-label">Short:</span>
-                <span>{{ selectedFood.shortDescription }}</span>
+              <!-- Row 2: Community Share checkboxes -->
+              <div class="share-row">
+                <mat-checkbox [checked]="selectedFood?.shareCandidate" disabled>Community Candidate</mat-checkbox>
+                <mat-checkbox [formControl]="shareApprovedControl">Community Share Approved</mat-checkbox>
+              </div>
+
+              <!-- Row 3: Short Description (full width) -->
+              <div class="short-desc-row">
+                <mat-form-field appearance="outline" class="short-desc-field" floatLabel="always">
+                  <mat-label>Short Description</mat-label>
+                  <input matInput [formControl]="shortDescriptionControl" maxlength="200">
+                </mat-form-field>
+              </div>
+
+              <!-- Row 4: Serving Unit + Grams Per Unit -->
+              <div class="serving-config-row">
+                <mat-form-field appearance="outline" class="serving-unit-field" floatLabel="always">
+                  <mat-label>Serving Unit</mat-label>
+                  <mat-select [formControl]="servingUnitControl">
+                    <mat-option [value]="null">-- none --</mat-option>
+                    <mat-option *ngFor="let u of servingUnitOptions" [value]="u">{{u}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="grams-per-unit-field" floatLabel="always">
+                  <mat-label>Grams Per Unit</mat-label>
+                  <input matInput type="number" [formControl]="servingGramsPerUnitControl" min="0.01" step="0.01">
+                </mat-form-field>
               </div>
 
               <!-- Nutrient table -->
@@ -132,69 +166,132 @@
               </div>
 
               <div class="footer-row">
-                <button mat-button class="all-nutrients-btn" (click)="showAllNutrients()">
-                  {{showingAllNutrients ? 'Hide Nutrients' : 'More Nutrients'}}
-                </button>
-                <button mat-button class="serving-mode-btn" (click)="toggleServingMode()">
-                  {{showPerServing ? 'Per 100g' : 'Per Serving'}}
-                </button>
-                <span class="per-unit-label">{{getDisplayUnit()}}</span>
+                <div class="footer-buttons">
+                  <button mat-button class="all-nutrients-btn" (click)="showAllNutrients()">
+                    {{showingAllNutrients ? 'Hide Nutrients' : 'More Nutrients'}}
+                  </button>
+                </div>
+                <div class="footer-right">
+                  <button mat-button class="serving-mode-btn" (click)="toggleServingMode()">
+                    {{showPerServing ? 'Per 100g' : 'Per Serving'}}
+                  </button>
+                  <div class="footer-labels">
+                    <div class="per-unit-label">{{getDisplayUnit()}}</div>
+                    <div class="serving-count-label">{{getServingLabel()}} {{getServingCount()}}</div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- All nutrients expanded view -->
             <div class="all-nutrients" *ngIf="showingAllNutrients && selectedFood.nutritionFacts">
               <mat-list>
-                <mat-list-item *ngFor="let item of [
-                  {name: 'Calories', value: selectedFood.nutritionFacts.calories, unit: 'kcal'},
-                  {name: 'Protein', value: selectedFood.nutritionFacts.proteinG, unit: 'g'},
-                  {name: 'Total Fat', value: selectedFood.nutritionFacts.totalFatG, unit: 'g'},
-                  {name: 'Saturated Fat', value: selectedFood.nutritionFacts.saturatedFatG, unit: 'g'},
-                  {name: 'Cholesterol', value: selectedFood.nutritionFacts.cholesterolMG, unit: 'mg'},
-                  {name: 'Sodium', value: selectedFood.nutritionFacts.sodiumMG, unit: 'mg'},
-                  {name: 'Total Carbohydrate', value: selectedFood.nutritionFacts.totalCarbohydrateG, unit: 'g'},
-                  {name: 'Dietary Fiber', value: selectedFood.nutritionFacts.dietaryFiberG, unit: 'g'},
-                  {name: 'Total Sugars', value: selectedFood.nutritionFacts.totalSugarsG, unit: 'g'},
-                  {name: 'Vitamin D', value: selectedFood.nutritionFacts.vitaminDMcg, unit: 'mcg'},
-                  {name: 'Calcium', value: selectedFood.nutritionFacts.calciumMG, unit: 'mg'},
-                  {name: 'Iron', value: selectedFood.nutritionFacts.ironMG, unit: 'mg'},
-                  {name: 'Potassium', value: selectedFood.nutritionFacts.potassiumMG, unit: 'mg'}
-                ]">
-                  <div class="nutrient-row">
-                    <div class="nutrient-name">{{ item.name }}</div>
-                    <div class="nutrient-value-container">
-                      <span class="value">{{ calculateNutrientValue(item.value) }}</span>
-                      <span class="unit">{{ item.unit }}</span>
-                    </div>
-                  </div>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Food Name</div>
+                    <div class="nutrient-value-container"><span class="value">{{selectedFood.nutritionFacts.foodName}}</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Calories</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.calories)}}</span> <span class="unit">kcal</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Total Fat</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.totalFatG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Saturated Fat</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.saturatedFatG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Cholesterol</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.cholesterolMG)}}</span> <span class="unit">mg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Sodium</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.sodiumMG)}}</span> <span class="unit">mg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Total Carbohydrate</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.totalCarbohydrateG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Dietary Fiber</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.dietaryFiberG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Total Sugars</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.totalSugarsG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Protein</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.proteinG)}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Vitamin D</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.vitaminDMcg)}}</span> <span class="unit">mcg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Calcium</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.calciumMG)}}</span> <span class="unit">mg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Iron</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.ironMG)}}</span> <span class="unit">mg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Potassium</div>
+                    <div class="nutrient-value-container"><span class="value">{{calculateNutrientValue(selectedFood.nutritionFacts.potassiumMG)}}</span> <span class="unit">mg</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Serving Size</div>
+                    <div class="nutrient-value-container"><span class="value">{{selectedFood.nutritionFacts.servingSizeHousehold}}</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Serving Size (g)</div>
+                    <div class="nutrient-value-container"><span class="value">{{selectedFood.nutritionFacts.servingSizeG}}</span> <span class="unit">g</span></div></div>
+                </mat-list-item>
+                <mat-list-item>
+                  <div class="nutrient-row"><div class="nutrient-name">Servings Per Container</div>
+                    <div class="nutrient-value-container"><span class="value">{{selectedFood.nutritionFacts.servingsPerContainer}}</span></div></div>
                 </mat-list-item>
               </mat-list>
             </div>
           </div>
         </div>
 
-        <!-- Images -->
-        <div class="image-display-section" *ngIf="hasNutritionImage() || hasProductImage()">
+        <!-- Nutrition Image Display -->
+        <div class="image-display-section" *ngIf="selectedFood && hasNutritionImage()">
           <div class="images-container">
-            <div class="image-card" *ngIf="hasNutritionImage()">
+            <div class="image-card">
               <div class="image-header">
                 <span class="image-label">Nutrition Facts Label</span>
+                <span class="image-status"
+                      [class.status-completed]="nutritionFactsStatus === 'completed'"
+                      [class.status-processing]="nutritionFactsStatus === 'processing'"
+                      [class.status-pending]="nutritionFactsStatus === 'pending'">
+                  {{nutritionFactsStatus || 'uploaded'}}
+                </span>
               </div>
               <div class="image-wrapper">
-                <img [src]="nutritionImageUrl()" alt="Nutrition Facts" class="food-image" loading="lazy">
-              </div>
-            </div>
-            <div class="image-card" *ngIf="hasProductImage()">
-              <div class="image-header">
-                <span class="image-label">Product Image</span>
-              </div>
-              <div class="image-wrapper">
-                <img [src]="productImageUrl()" alt="Product" class="food-image" loading="lazy">
+                <img [src]="nutritionImageUrl()"
+                     alt="Nutrition Facts Label"
+                     class="food-image nutrition-image"
+                     loading="lazy">
               </div>
             </div>
           </div>
         </div>
 
+        <!-- Image Upload Component (same as Foods tab) -->
+        <app-image-upload
+          [foodId]="selectedFood?.id"
+          [foodDescription]="selectedFood?.description"
+          [existingNutritionImageUrl]="selectedFood?.nutritionFactsImage"
+          [existingProductImageUrl]="selectedFood?.foodImage"
+          [nutritionFactsStatus]="nutritionFactsStatus"
+          (imagesUploaded)="onImagesUploaded($event)"
+          (refreshFood)="onRefreshFood()">
+        </app-image-upload>
       </div>
     </div>
   </div>
