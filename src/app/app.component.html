@@ -1,6 +1,6 @@
 <!-- Toolbar -->
 <div class="toolbar" role="banner">
-  <span class="app-title">Foods</span>
+  <span class="app-title">YEH Admin Tool</span>
   <div class="spacer"></div>
   <app-login></app-login>
 </div>
@@ -10,10 +10,19 @@
     <ng-container *ngIf="isAdmin$ | async; else notAuthorized">
       <mat-tab-group class="main-tabs" animationDuration="0ms">
         <mat-tab label="Foods">
-          <app-foods></app-foods>
+          <div class="tab-panel">
+            <app-foods></app-foods>
+          </div>
         </mat-tab>
         <mat-tab label="UserFoods">
-          <app-user-foods-admin></app-user-foods-admin>
+          <div class="tab-panel">
+            <app-user-foods-admin></app-user-foods-admin>
+          </div>
+        </mat-tab>
+        <mat-tab label="Meals">
+          <div class="tab-panel">
+            <p style="padding: 24px; color: #888;">Meals — coming soon</p>
+          </div>
         </mat-tab>
       </mat-tab-group>
     </ng-container>
