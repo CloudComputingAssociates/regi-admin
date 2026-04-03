@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Food, FoodMetadataUpdate, FatSecretCompareResponse, FatSecretOverwriteRequest } from '../models/food.model';
@@ -136,5 +136,20 @@ export class YehApiService {
 
   getImageApiHealth(): Observable<any> {
     return this.http.get<any>(`${this.imageApiUrl}/api/image/health`);
+  }
+
+  // ========================================
+  // ADMIN ENDPOINTS
+  // ========================================
+
+  searchAdminUsers(name?: string, email?: string): Observable<any> {
+    let params = new HttpParams();
+    if (name) params = params.set('name', name);
+    if (email) params = params.set('email', email);
+    return this.http.get<any>(`${this.baseUrl}/admin/users/search`, { params });
+  }
+
+  getAdminUserFoods(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/admin/userfoods/by-user/${userId}`);
   }
 }

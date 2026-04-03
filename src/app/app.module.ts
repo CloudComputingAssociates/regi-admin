@@ -22,11 +22,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTabsModule } from '@angular/material/tabs';
 
 import { AppComponent } from './app.component';
 import { AuthModule } from '@auth0/auth0-angular'
 import { LoginComponent } from './login/login.component';
 import { FoodsComponent } from './foods/foods.component';
+import { UserFoodsAdminComponent } from './user-foods-admin/user-foods-admin.component';
 import { YehApiService } from './services/yeh-api.service';
 import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
@@ -37,6 +39,7 @@ import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare
     AppComponent,
     LoginComponent,
     FoodsComponent,
+    UserFoodsAdminComponent,
     ImageUploadComponent,
     FatsecretCompareComponent
   ],
@@ -61,6 +64,7 @@ import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare
     MatIconModule,
     MatCheckboxModule,
     MatSelectModule,
+    MatTabsModule,
     UriListComponent,
     AuthModule.forRoot({
       domain: environment.auth0.domain,

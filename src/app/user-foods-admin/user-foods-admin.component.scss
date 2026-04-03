@@ -1,0 +1,377 @@
+.user-foods-container {
+  padding: 12px 0;
+}
+
+// ========================================
+// USER SEARCH BAR
+// ========================================
+
+.user-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .search-field {
+    flex: 1;
+    max-width: 250px;
+  }
+
+  .search-btn {
+    margin-top: -12px;
+  }
+}
+
+// ========================================
+// USER RESULTS LIST
+// ========================================
+
+.user-results {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+  background: white;
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:hover {
+      background: #f5f5f5;
+    }
+
+    &.selected {
+      background: #e3f2fd;
+      border-left: 3px solid #1976d2;
+    }
+
+    .user-id {
+      color: #888;
+      font-family: monospace;
+      min-width: 30px;
+    }
+
+    .user-name {
+      font-weight: 500;
+      min-width: 120px;
+    }
+
+    .user-email {
+      color: #666;
+    }
+  }
+}
+
+// ========================================
+// SELECTED USER BANNER
+// ========================================
+
+.selected-user-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #e3f2fd;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  font-size: 13px;
+
+  .user-label {
+    font-weight: 600;
+    color: #444;
+  }
+
+  .user-info {
+    color: #1976d2;
+    font-weight: 600;
+  }
+
+  .user-id-badge {
+    color: #1976d2;
+    font-family: monospace;
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  color: #666;
+}
+
+// ========================================
+// FOOD LIST + DETAIL (mirrors foods.component.scss patterns)
+// ========================================
+
+.results-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.results-sidebar {
+  width: 400px;
+  min-width: 300px;
+  max-height: 600px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+
+  // Material overrides for tight list
+  ::ng-deep .mat-mdc-list-item {
+    height: auto !important;
+    min-height: 36px;
+    padding: 2px 0;
+  }
+
+  ::ng-deep .mdc-list-item__content {
+    overflow: visible !important;
+    padding-right: 8px;
+  }
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  background: #e0e0e0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid #ccc;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+
+  &:hover {
+    background: #d5d5d5;
+  }
+
+  .collapse-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s;
+
+    &.collapsed {
+      transform: rotate(-90deg);
+    }
+  }
+
+  .category-name {
+    flex: 1;
+  }
+
+  .category-count {
+    background: #bbb;
+    color: white;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+  }
+}
+
+.food-item-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.food-thumbnail {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+
+  .thumbnail-img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 2px;
+  }
+
+  .thumbnail-placeholder {
+    width: 32px;
+    height: 32px;
+    background: #f0f0f0;
+    border-radius: 2px;
+  }
+}
+
+.food-description {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.food-id {
+  flex-shrink: 0;
+  width: 60px;
+  text-align: right;
+  font-family: monospace;
+  font-size: 11px;
+  color: #999;
+}
+
+// ========================================
+// DETAILS PANEL
+// ========================================
+
+.details-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.food-details {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
+  background: white;
+}
+
+.food-title {
+  font-size: 16px;
+  margin: 0 0 12px;
+  color: #333;
+}
+
+.metadata-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+
+  .food-id-field {
+    width: 80px;
+  }
+
+  .share-status {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+  }
+}
+
+.short-desc-row {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #555;
+
+  .short-desc-label {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.nutrient-table {
+  width: 100%;
+}
+
+.footer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+
+  .per-unit-label {
+    font-size: 11px;
+    color: #888;
+  }
+}
+
+.all-nutrients-btn,
+.serving-mode-btn {
+  font-size: 12px;
+  color: #1976d2;
+}
+
+.all-nutrients {
+  margin-top: 12px;
+  max-width: 400px;
+
+  .nutrient-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .nutrient-name {
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .nutrient-value-container {
+    font-size: 13px;
+
+    .value {
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .unit {
+      color: #888;
+    }
+  }
+}
+
+// ========================================
+// IMAGES
+// ========================================
+
+.image-display-section {
+  margin-top: 16px;
+}
+
+.images-container {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.image-card {
+  max-width: 300px;
+
+  .image-header {
+    margin-bottom: 4px;
+  }
+
+  .image-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+  }
+
+  .image-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .food-image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(ng *)",
+      "Bash(go *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git log *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git fetch *)",
+      "Bash(git pull *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(pushd *)",
+      "Bash(popd)",
+      "Bash(pwd)",
+      "Bash(echo *)",
+      "Read(//c/git/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)"
+    ],
+    "additionalDirectories": [
+      "c:\\git\\foods-tool-ui\\src\\app\\models",
+      "c:\\git\\foods-tool-ui\\src\\app\\foods",
+      "c:\\git\\foods-tool-ui\\src\\app",
+      "c:\\git\\yeh-api\\services",
+      "c:\\git\\yeh-api\\schemas",
+      "c:\\git\\yeh-api\\repos"
+    ]
+  }
+}
