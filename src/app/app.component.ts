@@ -10,25 +10,25 @@ import { map, catchError, switchMap } from 'rxjs/operators';
 })
 export class AppComponent {
   title = 'Foods App';
+  isAdmin$: Observable<boolean>;
 
-  constructor(public auth: AuthService) {}
-
-  // Check for Admin role in the access token's custom claims
-  isAdmin$: Observable<boolean> = this.auth.isAuthenticated$.pipe(
-    switchMap(isAuth => {
-      if (!isAuth) return of(false);
-      return this.auth.getAccessTokenSilently().pipe(
-        map(token => {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-            const roles: string[] = payload['https://yehapi.cloudcomputingassociates.net/roles'] || [];
-            return roles.includes('Admin');
-          } catch {
-            return false;
-          }
-        }),
-        catchError(() => of(false))
-      );
-    })
-  );
+  constructor(public auth: AuthService) {
+    this.isAdmin$ = this.auth.isAuthenticated$.pipe(
+      switchMap(isAuth => {
+        if (!isAuth) return of(false);
+        return this.auth.getAccessTokenSilently().pipe(
+          map(token => {
+            try {
+              const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+              const roles: string[] = payload['https://yehapi.cloudcomputingassociates.net/roles'] || [];
+              return roles.includes('Admin');
+            } catch {
+              return false;
+            }
+          }),
+          catchError(() => of(false))
+        );
+      })
+    );
+  }
 }
