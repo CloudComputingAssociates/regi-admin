@@ -1,6 +1,7 @@
 <div class="user-foods-container">
-  <!-- User Search Bar -->
-  <div class="user-search-bar">
+  <!-- Filter Bar - single compact row -->
+  <div class="filter-bar">
+    <span class="filter-title">Filters</span>
     <mat-form-field appearance="fill" class="search-field">
       <mat-label>Name</mat-label>
       <input matInput
@@ -15,13 +16,10 @@
              (keyup.enter)="applyFilters()"
              placeholder="Email address...">
     </mat-form-field>
-    <button mat-mini-fab class="apply-btn" (click)="applyFilters()" [disabled]="isSearchingUsers">
+    <mat-checkbox [formControl]="communityCandidateFilterControl">Community Candidate</mat-checkbox>
+    <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isSearchingUsers">
       <mat-icon>check</mat-icon>
     </button>
-  </div>
-  <div class="filter-row">
-    <span class="filter-label">Filter by:</span>
-    <mat-checkbox [formControl]="communityCandidateFilterControl">Community Candidate</mat-checkbox>
   </div>
 
   <!-- User Results List -->
@@ -49,42 +47,64 @@
     <span>Loading foods...</span>
   </div>
 
-  <!-- Food list + detail (same layout as Foods tab) -->
+  <!-- Food list + detail -->
   <div class="results-layout" *ngIf="foods.length > 0">
 
-    <!-- Left sidebar: Categorized food list -->
+    <!-- Left sidebar: Food list -->
     <div class="results-sidebar">
       <mat-selection-list #foodList
                           [multiple]="false"
                           (selectionChange)="onFoodSelected($event.options[0]?.value)"
                           (keydown)="onListKeydown($event)">
-        <ng-container *ngFor="let group of groupedFoods">
-          <div class="category-header" (click)="$event.stopPropagation(); toggleCategoryCollapse(group)">
-            <mat-icon class="collapse-icon" [class.collapsed]="group.collapsed">expand_more</mat-icon>
-            <span class="category-name">{{ group.category }}</span>
-            <span class="category-count">{{ group.foods.length }}</span>
-          </div>
-          <mat-list-option *ngFor="let item of group.foods"
-                           [value]="item.flatIndex"
-                           [selected]="item.flatIndex === selectedIndex"
-                           [matTooltip]="item.food?.description || ''"
+
+        <!-- Flat list mode (community candidates) -->
+        <ng-container *ngIf="showingCandidatesFlat">
+          <mat-list-option *ngFor="let food of foods; let i = index"
+                           [value]="i"
+                           [selected]="i === selectedIndex"
+                           [matTooltip]="food?.description || ''"
                            matTooltipPosition="right"
-                           [style.display]="group.collapsed ? 'none' : null"
                            class="food-list-item">
             <div class="food-item-content">
               <div class="food-thumbnail">
-                <img *ngIf="item.food?.foodImageThumbnail"
-                     [src]="item.food.foodImageThumbnail"
-                     alt="Product thumbnail"
-                     class="thumbnail-img">
-                <div *ngIf="!item.food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
+                <img *ngIf="food?.foodImageThumbnail" [src]="food.foodImageThumbnail" alt="" class="thumbnail-img">
+                <div *ngIf="!food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
               </div>
               <span class="food-description">
-                {{ truncateDescription(item.food?.shortDescription || item.food?.description) }}
+                {{ truncateDescription(food?.shortDescription || food?.description) }}
               </span>
-              <span class="food-id">{{ item.food?.id }}</span>
+              <span class="food-id">{{ food?.id }}</span>
             </div>
           </mat-list-option>
+        </ng-container>
+
+        <!-- Grouped list mode (user's foods) -->
+        <ng-container *ngIf="!showingCandidatesFlat">
+          <ng-container *ngFor="let group of groupedFoods">
+            <div class="category-header" (click)="$event.stopPropagation(); toggleCategoryCollapse(group)">
+              <mat-icon class="collapse-icon" [class.collapsed]="group.collapsed">expand_more</mat-icon>
+              <span class="category-name">{{ group.category }}</span>
+              <span class="category-count">{{ group.foods.length }}</span>
+            </div>
+            <mat-list-option *ngFor="let item of group.foods"
+                             [value]="item.flatIndex"
+                             [selected]="item.flatIndex === selectedIndex"
+                             [matTooltip]="item.food?.description || ''"
+                             matTooltipPosition="right"
+                             [style.display]="group.collapsed ? 'none' : null"
+                             class="food-list-item">
+              <div class="food-item-content">
+                <div class="food-thumbnail">
+                  <img *ngIf="item.food?.foodImageThumbnail" [src]="item.food.foodImageThumbnail" alt="" class="thumbnail-img">
+                  <div *ngIf="!item.food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
+                </div>
+                <span class="food-description">
+                  {{ truncateDescription(item.food?.shortDescription || item.food?.description) }}
+                </span>
+                <span class="food-id">{{ item.food?.id }}</span>
+              </div>
+            </mat-list-option>
+          </ng-container>
         </ng-container>
       </mat-selection-list>
     </div>
@@ -120,8 +140,15 @@
                 </button>
               </div>
 
-              <!-- Row 2: Community Share checkboxes -->
-              <div class="share-row">
+              <!-- Row 2: Category + Community Share checkboxes -->
+              <div class="category-share-row">
+                <mat-form-field appearance="outline" class="category-field" floatLabel="always">
+                  <mat-label>Category</mat-label>
+                  <mat-select [formControl]="categoryControl">
+                    <mat-option [value]="null">-- none --</mat-option>
+                    <mat-option *ngFor="let cat of categoryOptions" [value]="cat.id">{{cat.name}}</mat-option>
+                  </mat-select>
+                </mat-form-field>
                 <mat-checkbox [formControl]="shareCandidateControl">Community Candidate</mat-checkbox>
                 <mat-checkbox [formControl]="shareApprovedControl" (change)="onShareApprovedChange()">Community Share Approved</mat-checkbox>
               </div>
@@ -286,7 +313,7 @@
           </div>
         </div>
 
-        <!-- Image Upload Component (same as Foods tab) -->
+        <!-- Image Upload Component -->
         <app-image-upload
           [foodId]="selectedFood?.id"
           [foodDescription]="selectedFood?.description"

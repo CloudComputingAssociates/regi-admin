@@ -1,24 +1,17 @@
 <div class="foods-container">
-  <!-- Search box and limit control - horizontal layout -->
+  <!-- Search controls - single compact row -->
   <div class="search-controls">
     <mat-form-field appearance="fill" class="search-field">
-      <mat-label>Search Foods</mat-label>
+      <mat-label>Search</mat-label>
       <input matInput
              [formControl]="searchControl"
              (keyup.enter)="performSearch()"
-             placeholder="Enter food name...">
+             placeholder="Food name...">
       <mat-spinner *ngIf="isLoading"
                    matSuffix
                    diameter="20">
       </mat-spinner>
     </mat-form-field>
-    <button mat-raised-button
-            class="search-btn"
-            (click)="performSearch()"
-            matTooltip="Search"
-            tabindex="0">
-      <mat-icon>keyboard_return</mat-icon>
-    </button>
 
     <mat-form-field appearance="fill" class="limit-field">
       <mat-label>Limit</mat-label>
@@ -30,11 +23,10 @@
              min="1">
     </mat-form-field>
     <button mat-stroked-button class="max-btn" (click)="setMaxLimit()">Max</button>
-  </div>
-
-  <!-- YEH Approved checkbox -->
-  <div class="yeh-approved-row">
     <mat-checkbox [formControl]="yehApprovedControl" (change)="onYehApprovedChange()">YEH Approved</mat-checkbox>
+    <button mat-flat-button class="apply-btn" (click)="performSearch()">
+      <mat-icon>check</mat-icon>
+    </button>
   </div>
 
   <!-- NEW: Split layout with results list on left, details on right -->

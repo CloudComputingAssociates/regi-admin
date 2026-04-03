@@ -167,4 +167,9 @@ export class YehApiService {
   getShareCandidates(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/userfoods/candidates`);
   }
+
+  // Get food categories
+  getCategories(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/foods/categories`);
+  }
 }

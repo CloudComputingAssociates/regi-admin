@@ -50,10 +50,14 @@ export class UserFoodsAdminComponent {
   // Filter controls
   communityCandidateFilterControl = new FormControl<boolean>(false);
 
+  // Whether currently showing flat candidate list (no category grouping)
+  showingCandidatesFlat = false;
+
   // Metadata form controls (mirrors Foods tab)
   shortDescriptionControl = new FormControl<string | null>(null);
   glycemicIndexControl = new FormControl<number | null>(null);
   glycemicLoadControl = new FormControl<number | null>(null);
+  categoryControl = new FormControl<number | null>(null);
   shareCandidateControl = new FormControl<boolean>(false);
   shareApprovedControl = new FormControl<boolean>(false);
   servingUnitControl = new FormControl<string | null>(null);
@@ -62,11 +66,15 @@ export class UserFoodsAdminComponent {
 
   readonly servingUnitOptions = ['whole', 'cup', 'tbsp', 'tsp', 'oz', 'lbs', 'g'];
 
+  // Category options (loaded from API)
+  categoryOptions: { id: number; name: string }[] = [];
+
   // Track original values for change detection
   private originalMetadata = {
     shortDescription: null as string | null,
     glycemicIndex: null as number | null,
     glycemicLoad: null as number | null,
+    categoryId: null as number | null,
     shareCandidate: false,
     shareApproved: false,
     servingUnit: null as string | null,
@@ -82,7 +90,14 @@ export class UserFoodsAdminComponent {
   constructor(
     private apiService: YehApiService,
     private snackBar: MatSnackBar
-  ) {}
+  ) {
+    this.apiService.getCategories().subscribe({
+      next: (cats) => {
+        const list = Array.isArray(cats) ? cats : cats?.categories || [];
+        this.categoryOptions = list.map((c: any) => ({ id: c.categoryId || c.id, name: c.categoryName || c.name }));
+      }
+    });
+  }
 
   // ========================================
   // USER SEARCH
@@ -128,11 +143,12 @@ export class UserFoodsAdminComponent {
     this.userResults = [];
     this.foods = [];
     this.selectedFood = null;
+    this.showingCandidatesFlat = true;
 
     this.apiService.getShareCandidates().subscribe({
       next: (result) => {
         this.foods = result.foods || result || [];
-        this.buildGroupedFoods();
+        this.groupedFoods = []; // no grouping for flat candidate list
         this.isLoadingFoods = false;
 
         this.snackBar.open(`${this.foods.length} community candidates`, 'Close', {
@@ -163,6 +179,7 @@ export class UserFoodsAdminComponent {
     this.foods = [];
     this.selectedFood = null;
     this.groupedFoods = [];
+    this.showingCandidatesFlat = false;
 
     this.apiService.getAdminUserFoods(userId).subscribe({
       next: (result) => {
@@ -251,6 +268,7 @@ export class UserFoodsAdminComponent {
     this.shortDescriptionControl.setValue(food.shortDescription ?? null);
     this.glycemicIndexControl.setValue(food.glycemicIndex ?? null);
     this.glycemicLoadControl.setValue(food.glycemicLoad ?? null);
+    this.categoryControl.setValue(food.categoryId ?? null);
     this.shareCandidateControl.setValue(food.shareCandidate ?? false);
     this.shareApprovedControl.setValue(food.shareApproved ?? false);
     this.servingUnitControl.setValue(food.servingUnit ?? null);
@@ -260,6 +278,7 @@ export class UserFoodsAdminComponent {
       shortDescription: food.shortDescription ?? null,
       glycemicIndex: food.glycemicIndex ?? null,
       glycemicLoad: food.glycemicLoad ?? null,
+      categoryId: food.categoryId ?? null,
       shareCandidate: food.shareCandidate ?? false,
       shareApproved: food.shareApproved ?? false,
       servingUnit: food.servingUnit ?? null,
@@ -277,6 +296,7 @@ export class UserFoodsAdminComponent {
     return this.shortDescriptionControl.value !== this.originalMetadata.shortDescription ||
            this.glycemicIndexControl.value !== this.originalMetadata.glycemicIndex ||
            this.glycemicLoadControl.value !== this.originalMetadata.glycemicLoad ||
+           this.categoryControl.value !== this.originalMetadata.categoryId ||
            this.shareCandidateControl.value !== this.originalMetadata.shareCandidate ||
            this.shareApprovedControl.value !== this.originalMetadata.shareApproved ||
            this.servingUnitControl.value !== this.originalMetadata.servingUnit ||
@@ -309,6 +329,9 @@ export class UserFoodsAdminComponent {
       update.servingGramsPerUnit = this.servingGramsPerUnitControl.value;
     }
 
+    if (this.categoryControl.value !== this.originalMetadata.categoryId) {
+      update.categoryId = this.categoryControl.value;
+    }
     if (this.shareCandidateControl.value !== this.originalMetadata.shareCandidate) {
       update.shareCandidate = this.shareCandidateControl.value;
     }
@@ -357,6 +380,7 @@ export class UserFoodsAdminComponent {
         shortDescription: this.shortDescriptionControl.value,
         glycemicIndex: this.glycemicIndexControl.value,
         glycemicLoad: this.glycemicLoadControl.value,
+        categoryId: this.categoryControl.value,
         shareCandidate: this.shareCandidateControl.value ?? false,
         shareApproved: this.shareApprovedControl.value ?? false,
         servingUnit: this.servingUnitControl.value,

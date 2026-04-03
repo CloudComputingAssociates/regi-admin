@@ -25,32 +25,20 @@
   }
 
   .search-field {
-    flex: 0 0 60%;
+    flex: 1;
+    max-width: 400px;
 
     @media (max-width: $mobile-breakpoint) {
       width: 100%;
+      max-width: none;
     }
   }
 
   .limit-field {
-    flex: 0 0 150px;
+    flex: 0 0 100px;
 
     @media (max-width: $mobile-breakpoint) {
       width: 100%;
-    }
-  }
-
-  .search-btn {
-    height: 40px;
-    min-width: 40px;
-    max-width: 40px;
-    padding: 0;
-    margin-left: -8px;
-    background: #1976d2;
-    color: white;
-
-    .mat-icon {
-      margin: 0;
     }
   }
 
@@ -66,14 +54,17 @@
     }
   }
 
-  // YEH Approved checkbox row - tight underneath search
-  .yeh-approved-row {
-    margin-bottom: 16px;
-    margin-top: 0;
-    padding-left: 4px;
+  .apply-btn {
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background-color: #4caf50 !important;
+    color: white !important;
+    border-radius: 4px;
 
-    mat-checkbox {
-      font-size: 14px;
+    .mat-icon {
+      margin: 0;
     }
   }
 }

@@ -6,34 +6,38 @@
 // USER SEARCH BAR
 // ========================================
 
-.user-search-bar {
+.filter-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
+
+  .filter-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-right: 4px;
+  }
 
   .search-field {
     flex: 1;
-    max-width: 250px;
+    max-width: 220px;
   }
 
   .apply-btn {
     margin-top: -12px;
+    min-width: 36px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     background-color: #4caf50 !important;
     color: white !important;
-  }
-}
+    border-radius: 4px;
 
-.filter-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-
-  .filter-label {
-    font-size: 12px;
-    color: #666;
-    font-weight: 500;
+    .mat-icon {
+      margin: 0;
+    }
   }
 }
 
@@ -287,10 +291,16 @@
   }
 }
 
-.share-row {
+.category-share-row {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 8px;
+  flex-wrap: wrap;
+
+  .category-field {
+    width: 160px;
+  }
 }
 
 .short-desc-row {
