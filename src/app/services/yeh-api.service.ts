@@ -153,9 +153,9 @@ export class YehApiService {
     return this.http.get<any>(`${this.baseUrl}/admin/userfoods/by-user/${userId}`);
   }
 
-  // Update a user food's metadata (admin, uses existing PUT endpoint)
+  // Update a user food's metadata (admin partial update, no ownership check)
   updateAdminUserFood(userFoodId: number, update: any): Observable<any> {
-    return this.http.put<any>(`${this.baseUrl}/userfoods/${userFoodId}`, update);
+    return this.http.patch<any>(`${this.baseUrl}/admin/userfoods/${userFoodId}`, update);
   }
 
   // Approve or reject a share candidate
