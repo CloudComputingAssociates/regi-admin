@@ -46,10 +46,19 @@
 .main-tabs {
   width: 100%;
 
+  // Hide pagination arrows
+  ::ng-deep .mat-mdc-tab-header-pagination {
+    display: none !important;
+  }
+
   ::ng-deep .mat-mdc-tab-header {
     background: transparent;
     border-bottom: none;
     padding: 0;
+  }
+
+  ::ng-deep .mat-mdc-tab-label-container {
+    overflow: visible !important;
   }
 
   ::ng-deep .mat-mdc-tab-labels {
@@ -75,13 +84,13 @@
   }
 
   ::ng-deep .mdc-tab--active {
-    background: white !important;
-    color: #333 !important;
-    border-color: #ccc !important;
+    background: #1976d2 !important;
+    color: white !important;
+    border-color: #1565c0 !important;
     z-index: 1;
 
     .mdc-tab__text-label {
-      color: #333 !important;
+      color: white !important;
     }
   }
 
@@ -95,7 +104,8 @@
 
   ::ng-deep .mat-mdc-tab-body-wrapper {
     border: 1px solid #ccc;
-    border-radius: 0 4px 4px 4px;
+    border-top: 2px solid #1976d2;
+    border-radius: 0 0 4px 4px;
     background: white;
   }
 }
