@@ -60,6 +60,7 @@ export class UserFoodsAdminComponent {
   categoryControl = new FormControl<number | null>(null);
   shareCandidateControl = new FormControl<boolean>(false);
   shareApprovedControl = new FormControl<boolean>(false);
+  productPurchaseLinkControl = new FormControl<string | null>(null);
   servingUnitControl = new FormControl<string | null>(null);
   servingGramsPerUnitControl = new FormControl<number | null>(null);
   isSavingMetadata = false;
@@ -75,6 +76,7 @@ export class UserFoodsAdminComponent {
     glycemicIndex: null as number | null,
     glycemicLoad: null as number | null,
     categoryId: null as number | null,
+    productPurchaseLink: null as string | null,
     shareCandidate: false,
     shareApproved: false,
     servingUnit: null as string | null,
@@ -269,6 +271,7 @@ export class UserFoodsAdminComponent {
     this.glycemicIndexControl.setValue(food.glycemicIndex ?? null);
     this.glycemicLoadControl.setValue(food.glycemicLoad ?? null);
     this.categoryControl.setValue(food.categoryId ?? null);
+    this.productPurchaseLinkControl.setValue(food.productPurchaseLink ?? null);
     this.shareCandidateControl.setValue(food.shareCandidate ?? false);
     this.shareApprovedControl.setValue(food.shareApproved ?? false);
     this.servingUnitControl.setValue(food.servingUnit ?? null);
@@ -279,11 +282,20 @@ export class UserFoodsAdminComponent {
       glycemicIndex: food.glycemicIndex ?? null,
       glycemicLoad: food.glycemicLoad ?? null,
       categoryId: food.categoryId ?? null,
+      productPurchaseLink: food.productPurchaseLink ?? null,
       shareCandidate: food.shareCandidate ?? false,
       shareApproved: food.shareApproved ?? false,
       servingUnit: food.servingUnit ?? null,
       servingGramsPerUnit: food.servingGramsPerUnit ?? null
     };
+  }
+
+  openPurchaseLink(): void {
+    const url = this.productPurchaseLinkControl.value;
+    if (url) {
+      const fullUrl = url.startsWith('http') ? url : 'https://' + url;
+      window.open(fullUrl, '_blank');
+    }
   }
 
   onShareApprovedChange(): void {
@@ -297,6 +309,7 @@ export class UserFoodsAdminComponent {
            this.glycemicIndexControl.value !== this.originalMetadata.glycemicIndex ||
            this.glycemicLoadControl.value !== this.originalMetadata.glycemicLoad ||
            this.categoryControl.value !== this.originalMetadata.categoryId ||
+           this.productPurchaseLinkControl.value !== this.originalMetadata.productPurchaseLink ||
            this.shareCandidateControl.value !== this.originalMetadata.shareCandidate ||
            this.shareApprovedControl.value !== this.originalMetadata.shareApproved ||
            this.servingUnitControl.value !== this.originalMetadata.servingUnit ||
@@ -331,6 +344,9 @@ export class UserFoodsAdminComponent {
 
     if (this.categoryControl.value !== this.originalMetadata.categoryId) {
       update.categoryId = this.categoryControl.value;
+    }
+    if (this.productPurchaseLinkControl.value !== this.originalMetadata.productPurchaseLink) {
+      update.productPurchaseLink = this.productPurchaseLinkControl.value === '' ? null : this.productPurchaseLinkControl.value;
     }
     if (this.shareCandidateControl.value !== this.originalMetadata.shareCandidate) {
       update.shareCandidate = this.shareCandidateControl.value;
@@ -381,6 +397,7 @@ export class UserFoodsAdminComponent {
         glycemicIndex: this.glycemicIndexControl.value,
         glycemicLoad: this.glycemicLoadControl.value,
         categoryId: this.categoryControl.value,
+        productPurchaseLink: this.productPurchaseLinkControl.value,
         shareCandidate: this.shareCandidateControl.value ?? false,
         shareApproved: this.shareApprovedControl.value ?? false,
         servingUnit: this.servingUnitControl.value,
