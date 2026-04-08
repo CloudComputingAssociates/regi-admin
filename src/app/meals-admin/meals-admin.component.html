@@ -7,7 +7,8 @@
       <mat-label>Meal Plan Name</mat-label>
       <input matInput [formControl]="nameSearchControl" (keyup.enter)="applyFilters()" placeholder="Search by name...">
     </mat-form-field>
-    <mat-checkbox [formControl]="communityCandidateFilterControl">Community Candidate</mat-checkbox>
+    <mat-checkbox [formControl]="communityFilterControl">Community</mat-checkbox>
+    <mat-checkbox [formControl]="yehFilterControl">YEH Approved</mat-checkbox>
     <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isLoading">
       <mat-icon>check</mat-icon>
     </button>
@@ -28,6 +29,10 @@
              [class.selected]="selectedPlan?.id === plan.id"
              (click)="selectPlan(plan)">
           <div class="plan-item-content">
+            <!-- Source icon: Community-C, YEH favicon, or blank spacer -->
+            <div class="source-icon">
+              <img *ngIf="getPlanIcon(plan)" [src]="getPlanIcon(plan)" alt="" class="source-icon-img">
+            </div>
             <div class="plan-thumbnail">
               <img *ngIf="plan.mealImageThumbnail" [src]="plan.mealImageThumbnail" alt="" class="thumbnail-img">
               <div *ngIf="!plan.mealImageThumbnail" class="thumbnail-placeholder">
@@ -36,7 +41,7 @@
             </div>
             <div class="plan-info">
               <span class="plan-name">{{ truncateDescription(plan.name, 30) }}</span>
-              <span class="plan-meta">{{ plan.totalCalories ?? 0 }} cal &middot; {{ plan.userName ?? 'Unknown' }}</span>
+              <span class="plan-meta">{{ plan.totalCalories ?? 0 }} cal &middot; {{ plan.userName ?? 'User' }}</span>
             </div>
             <span class="plan-id">#{{ plan.id }}</span>
           </div>
@@ -64,7 +69,7 @@
         <button mat-flat-button class="save-btn" (click)="saveApproval()" [disabled]="!hasShareChanges || isSaving">
           <mat-icon>check</mat-icon> Save
         </button>
-        <span *ngIf="isApproved" class="approved-badge">✓ APPROVED</span>
+        <span *ngIf="isApproved" class="approved-badge">&#10003; APPROVED</span>
       </div>
 
       <!-- Meal Image -->
@@ -136,6 +141,6 @@
   <!-- Empty state -->
   <div *ngIf="mealPlans.length === 0 && !isLoading" class="empty-state">
     <mat-icon>restaurant_menu</mat-icon>
-    <p>No meal plan candidates found</p>
+    <p>No meal plans found. Adjust filters and click apply.</p>
   </div>
 </div>

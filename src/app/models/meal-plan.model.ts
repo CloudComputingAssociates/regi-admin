@@ -1,7 +1,10 @@
+export type MealPlanSource = 'user' | 'yeh' | 'community';
+
 export interface MealPlanSummary {
   id: number;
   name: string;
   planType: string;
+  isYeh?: boolean;
   totalCalories?: number;
   totalProteinG?: number;
   totalFatG?: number;

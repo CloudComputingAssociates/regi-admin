@@ -80,7 +80,23 @@
 .plan-item-content {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+}
+
+// Source icon column (Community-C, YEH, or blank spacer)
+.source-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .source-icon-img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+  }
 }
 
 .plan-thumbnail {

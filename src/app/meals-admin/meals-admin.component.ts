@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { YehApiService } from '../services/yeh-api.service';
-import { MealPlanSummary, MealPlanItem } from '../models/meal-plan.model';
+import { MealPlanSummary, MealPlanSource } from '../models/meal-plan.model';
 
 @Component({
   selector: 'app-meals-admin',
@@ -12,7 +12,8 @@ import { MealPlanSummary, MealPlanItem } from '../models/meal-plan.model';
 export class MealsAdminComponent implements OnInit {
   // Filter controls
   nameSearchControl = new FormControl('');
-  communityCandidateFilterControl = new FormControl<boolean>(true);
+  communityFilterControl = new FormControl<boolean>(false);
+  yehFilterControl = new FormControl<boolean>(false);
 
   // State
   mealPlans: MealPlanSummary[] = [];
@@ -36,27 +37,26 @@ export class MealsAdminComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadCandidates();
+    this.loadMealPlans();
   }
 
   applyFilters(): void {
-    if (this.communityCandidateFilterControl.value) {
-      this.loadCandidates();
-    }
+    this.loadMealPlans();
   }
 
-  loadCandidates(): void {
+  loadMealPlans(): void {
     this.isLoading = true;
     this.selectedPlan = null;
 
     const name = this.nameSearchControl.value?.trim() || undefined;
-    const request = name
-      ? this.apiService.searchMealPlans(name)
-      : this.apiService.getMealPlanShareCandidates();
+    const community = this.communityFilterControl.value || false;
+    const yeh = this.yehFilterControl.value || false;
 
-    request.subscribe({
+    this.apiService.getAdminMealPlans({ name, community, yeh }).subscribe({
       next: (data: any) => {
-        const plans = Array.isArray(data) ? data : data?.meals ?? data?.data ?? [];
+        const plans: MealPlanSummary[] = Array.isArray(data) ? data : data?.meals ?? data?.data ?? [];
+        // Sort alphabetically by name
+        plans.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
         this.mealPlans = plans;
         this.isLoading = false;
       },
@@ -69,10 +69,22 @@ export class MealsAdminComponent implements OnInit {
     });
   }
 
+  getPlanSource(plan: MealPlanSummary): MealPlanSource {
+    if (plan.shareApproved) return 'community';
+    if (plan.isYeh) return 'yeh';
+    return 'user';
+  }
+
+  getPlanIcon(plan: MealPlanSummary): string | null {
+    const source = this.getPlanSource(plan);
+    if (source === 'community') return 'images/Community-C.ico';
+    if (source === 'yeh') return 'favicon.ico';
+    return null; // user plans have no icon
+  }
+
   selectPlan(plan: MealPlanSummary): void {
     this.selectedPlan = plan;
 
-    // Load full plan with items if needed
     this.apiService.getAdminMealPlan(plan.id).subscribe({
       next: (fullPlan: any) => {
         this.selectedPlan = { ...plan, ...fullPlan, items: fullPlan.items ?? [] };
@@ -92,7 +104,6 @@ export class MealsAdminComponent implements OnInit {
     this.originalVideoLink = plan.prepVideoLink ?? null;
     this.originalRecipeLink = plan.recipeLink ?? null;
 
-    // Disable media controls if already approved
     if (plan.shareApproved) {
       this.videoLinkControl.disable();
       this.recipeLinkControl.disable();
@@ -192,7 +203,6 @@ export class MealsAdminComponent implements OnInit {
         if (this.shareApprovedControl.value) {
           this.selectedPlan.shareCandidate = false;
           this.shareCandidateControl.setValue(false);
-          // Lock media fields after approval
           this.videoLinkControl.disable();
           this.recipeLinkControl.disable();
           this.shareCandidateControl.disable();
@@ -200,8 +210,7 @@ export class MealsAdminComponent implements OnInit {
         }
       }
       this.snackBar.open('Approval saved', 'Dismiss', { duration: 2000 });
-      // Refresh list
-      this.loadCandidates();
+      this.loadMealPlans();
     } catch {
       this.snackBar.open('Failed to save approval', 'Dismiss', { duration: 3000 });
     }

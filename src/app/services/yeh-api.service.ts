@@ -181,10 +181,13 @@ export class YehApiService {
     return this.http.get<any>(`${this.baseUrl}/meal/candidates`);
   }
 
-  searchMealPlans(name?: string): Observable<any> {
+  // Get all meal plans (admin) with optional filters
+  getAdminMealPlans(filters?: { name?: string; community?: boolean; yeh?: boolean }): Observable<any> {
     let params = new HttpParams();
-    if (name) params = params.set('name', name);
-    return this.http.get<any>(`${this.baseUrl}/meal/candidates`, { params });
+    if (filters?.name) params = params.set('name', filters.name);
+    if (filters?.community) params = params.set('community', 'true');
+    if (filters?.yeh) params = params.set('yeh', 'true');
+    return this.http.get<any>(`${this.baseUrl}/admin/meals`, { params });
   }
 
   getAdminMealPlan(mealId: number): Observable<any> {
