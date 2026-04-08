@@ -33,6 +33,7 @@ import { YehApiService } from './services/yeh-api.service';
 import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
 import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare.component';
+import { MealsAdminComponent } from './meals-admin/meals-admin.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare
     FoodsComponent,
     UserFoodsAdminComponent,
     ImageUploadComponent,
-    FatsecretCompareComponent
+    FatsecretCompareComponent,
+    MealsAdminComponent
   ],
   imports: [
     BrowserModule,

@@ -172,4 +172,30 @@ export class YehApiService {
   getCategories(): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/foods/categories`);
   }
+
+  // ========================================
+  // MEAL PLAN ADMIN ENDPOINTS
+  // ========================================
+
+  getMealPlanShareCandidates(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/meal/candidates`);
+  }
+
+  searchMealPlans(name?: string): Observable<any> {
+    let params = new HttpParams();
+    if (name) params = params.set('name', name);
+    return this.http.get<any>(`${this.baseUrl}/meal/candidates`, { params });
+  }
+
+  getAdminMealPlan(mealId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/meal/${mealId}`);
+  }
+
+  updateAdminMealPlan(mealId: number, update: any): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/meal/${mealId}`, update);
+  }
+
+  setMealPlanShareApproval(mealId: number, approved: boolean): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/meal/${mealId}/approve`, { approved });
+  }
 }
