@@ -76,10 +76,9 @@ export class MealsAdminComponent implements OnInit {
   }
 
   getPlanIcon(plan: MealPlanSummary): string | null {
-    const source = this.getPlanSource(plan);
-    if (source === 'community') return 'images/Community-C.ico';
-    if (source === 'yeh') return 'favicon.ico';
-    return null; // user plans have no icon
+    if (plan.shareCandidate || plan.shareApproved) return 'Community-C.ico';
+    if (plan.isYeh) return 'favicon.ico';
+    return null;
   }
 
   selectPlan(plan: MealPlanSummary): void {
