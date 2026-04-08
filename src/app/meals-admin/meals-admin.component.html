@@ -29,9 +29,10 @@
              [class.selected]="selectedPlan?.id === plan.id"
              (click)="selectPlan(plan)">
           <div class="plan-item-content">
-            <!-- Source icon: Community-C for candidates, YEH favicon, or blank for user -->
+            <!-- Source icon: Community-C for candidates, YEH favicon, fork-knife for user -->
             <div class="source-icon">
               <img *ngIf="getPlanIcon(plan)" [src]="getPlanIcon(plan)" alt="" class="source-icon-img">
+              <mat-icon *ngIf="!getPlanIcon(plan)">restaurant</mat-icon>
             </div>
             <div class="plan-thumbnail">
               <img *ngIf="plan.mealImageThumbnail" [src]="plan.mealImageThumbnail" alt="" class="thumbnail-img">
