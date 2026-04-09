@@ -239,8 +239,9 @@
 }
 
 .meal-image-preview {
-  max-width: 300px;
-  max-height: 200px;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
   border-radius: 4px;
   border: 1px solid #ddd;
 }
