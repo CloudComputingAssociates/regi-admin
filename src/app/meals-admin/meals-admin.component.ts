@@ -119,7 +119,7 @@ export class MealsAdminComponent implements OnInit {
   onShareApprovedChange(): void {
     if (this.shareApprovedControl.value) {
       const confirmed = window.confirm(
-        'If the meal is community shared, you will lose the ability to modify the picture, video link, and recipe link. Are you sure you are ready to publish this to the community?'
+        'Are these links and pictures reviewed?\n\n- Product Image\n- Video Link\n- Recipe Link'
       );
       if (!confirmed) {
         this.shareApprovedControl.setValue(false);
