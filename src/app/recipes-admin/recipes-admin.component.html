@@ -10,9 +10,11 @@
     <span class="filter-label">Filter:</span>
     <mat-checkbox [formControl]="yehFilterControl">YEH</mat-checkbox>
     <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isLoading">
-      <mat-icon>check</mat-icon>
+      <mat-icon>keyboard_return</mat-icon>
     </button>
-    <button mat-flat-button class="new-btn" (click)="createNew()">
+  </div>
+  <div class="new-row">
+    <button mat-flat-button class="new-btn" (click)="createNew()" matTooltip="Add new recipe">
       <mat-icon>add</mat-icon>
     </button>
   </div>
