@@ -201,4 +201,47 @@ export class YehApiService {
   setMealPlanShareApproval(mealId: number, approved: boolean): Observable<any> {
     return this.http.patch<any>(`${this.baseUrl}/meal/${mealId}/approve`, { approved });
   }
+
+  // ========================================
+  // RECIPE ADMIN ENDPOINTS
+  // ========================================
+
+  searchRecipes(title?: string, yeh?: boolean): Observable<any> {
+    let params = new HttpParams();
+    if (title) params = params.set('title', title);
+    if (yeh) params = params.set('yeh', 'true');
+    return this.http.get<any>(`${this.baseUrl}/admin/recipes`, { params });
+  }
+
+  getRecipe(id: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/admin/recipes/${id}`);
+  }
+
+  createRecipe(req: { title: string; isYEH?: boolean; attributionAuthor?: string; attributionLink?: string }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/admin/recipes`, req);
+  }
+
+  updateRecipe(id: number, fields: any): Observable<any> {
+    return this.http.patch<any>(`${this.baseUrl}/admin/recipes/${id}`, fields);
+  }
+
+  deleteRecipe(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/admin/recipes/${id}`);
+  }
+
+  uploadRecipeImage(recipeId: number, title: string, imageFile: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('recipeId', recipeId.toString());
+    formData.append('title', title);
+    formData.append('image', imageFile);
+    return this.http.post<any>(`${this.imageApiUrl}/api/image/upload/recipe-image`, formData);
+  }
+
+  uploadRecipePDF(recipeId: number, title: string, pdfFile: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('recipeId', recipeId.toString());
+    formData.append('title', title);
+    formData.append('pdf', pdfFile);
+    return this.http.post<any>(`${this.imageApiUrl}/api/image/upload/recipe-pdf`, formData);
+  }
 }

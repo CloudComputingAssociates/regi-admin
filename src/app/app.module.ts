@@ -34,6 +34,7 @@ import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
 import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare.component';
 import { MealsAdminComponent } from './meals-admin/meals-admin.component';
+import { RecipesAdminComponent } from './recipes-admin/recipes-admin.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { MealsAdminComponent } from './meals-admin/meals-admin.component';
     UserFoodsAdminComponent,
     ImageUploadComponent,
     FatsecretCompareComponent,
-    MealsAdminComponent
+    MealsAdminComponent,
+    RecipesAdminComponent
   ],
   imports: [
     BrowserModule,
