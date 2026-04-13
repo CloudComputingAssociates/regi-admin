@@ -76,14 +76,12 @@ export class RecipesAdminComponent {
   // ========================================
 
   createNew(): void {
-    const title = prompt('Recipe title:');
-    if (!title || !title.trim()) return;
-
-    this.apiService.createRecipe({ title: title.trim() }).subscribe({
+    this.apiService.createRecipe({ title: 'New Recipe' }).subscribe({
       next: (recipe) => {
-        this.snackBar.open('Recipe created', 'Close', { duration: 3000 });
         this.recipes.unshift(recipe);
         this.selectRecipe(recipe);
+        // Focus the title field for immediate editing
+        setTimeout(() => this.titleControl.setValue(''), 100);
       },
       error: () => {
         this.snackBar.open('Failed to create recipe', 'Close', { duration: 5000 });

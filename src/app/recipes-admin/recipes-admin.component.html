@@ -7,12 +7,13 @@
       <mat-label>Recipe Title</mat-label>
       <input matInput [formControl]="titleSearchControl" (keyup.enter)="applyFilters()" placeholder="Search by title...">
     </mat-form-field>
+    <span class="filter-label">Filter:</span>
     <mat-checkbox [formControl]="yehFilterControl">YEH</mat-checkbox>
     <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isLoading">
       <mat-icon>check</mat-icon>
     </button>
-    <button mat-stroked-button class="new-btn" (click)="createNew()">
-      <mat-icon>add</mat-icon> New
+    <button mat-flat-button class="new-btn" (click)="createNew()">
+      <mat-icon>add</mat-icon>
     </button>
   </div>
 
@@ -132,8 +133,9 @@
 
       <!-- Action buttons -->
       <div class="action-row">
-        <button mat-raised-button color="primary" (click)="save()"
+        <button mat-flat-button class="save-btn" (click)="save()"
                 [disabled]="isSaving || !hasChanges()">
+          <mat-icon>check</mat-icon>
           {{ isSaving ? 'Saving...' : 'Save' }}
         </button>
         <button mat-stroked-button color="warn" (click)="deleteRecipe()">
