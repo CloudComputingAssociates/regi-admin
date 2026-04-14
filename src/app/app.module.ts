@@ -35,6 +35,7 @@ import { ImageUploadComponent } from './image-upload/image-upload.component';
 import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare.component';
 import { MealsAdminComponent } from './meals-admin/meals-admin.component';
 import { RecipesAdminComponent } from './recipes-admin/recipes-admin.component';
+import { SafePipe } from './pipes/safe.pipe';
 
 @NgModule({
   declarations: [
@@ -45,7 +46,8 @@ import { RecipesAdminComponent } from './recipes-admin/recipes-admin.component';
     ImageUploadComponent,
     FatsecretCompareComponent,
     MealsAdminComponent,
-    RecipesAdminComponent
+    RecipesAdminComponent,
+    SafePipe
   ],
   imports: [
     BrowserModule,

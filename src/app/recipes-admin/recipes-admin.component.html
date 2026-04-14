@@ -110,10 +110,10 @@
       <!-- Recipe PDF -->
       <div class="upload-section">
         <label>Recipe PDF</label>
-        <div class="pdf-display" *ngIf="selectedRecipe.recipePDFLink && !stagedPDFName">
-          <a [href]="selectedRecipe.recipePDFLink" target="_blank" class="pdf-link">
-            <mat-icon>picture_as_pdf</mat-icon>
-            View PDF
+        <div class="pdf-viewer" *ngIf="selectedRecipe.recipePDFLink && !stagedPDFName">
+          <iframe [src]="selectedRecipe.recipePDFLink | safe" class="pdf-iframe"></iframe>
+          <a [href]="selectedRecipe.recipePDFLink" target="_blank" class="pdf-open-link">
+            <mat-icon>open_in_new</mat-icon> Open in new tab
           </a>
         </div>
         <div class="pdf-display" *ngIf="stagedPDFName">

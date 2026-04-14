@@ -128,6 +128,13 @@ export class RecipesAdminComponent {
 
   async save(): Promise<void> {
     if (!this.selectedRecipe) return;
+
+    const title = this.titleControl.value?.trim();
+    if (!title) {
+      this.snackBar.open('Title is required', 'Close', { duration: 3000 });
+      return;
+    }
+
     this.isSaving = true;
 
     try {
@@ -150,10 +157,11 @@ export class RecipesAdminComponent {
         await this.apiService.updateRecipe(this.selectedRecipe.id, update).toPromise();
       }
 
-      // Step 2: Upload image if staged
+      // Step 2: Upload image if staged (use current title from form, not stale record)
+      const currentTitle = this.titleControl.value?.trim() || this.selectedRecipe.title;
       if (this.stagedImageFile) {
         const imgResult: any = await this.apiService.uploadRecipeImage(
-          this.selectedRecipe.id, this.selectedRecipe.title, this.stagedImageFile
+          this.selectedRecipe.id, currentTitle, this.stagedImageFile
         ).toPromise();
         if (imgResult?.cdn_url) {
           this.selectedRecipe.recipeImageLink = imgResult.cdn_url;
@@ -164,7 +172,7 @@ export class RecipesAdminComponent {
       // Step 3: Upload PDF if staged
       if (this.stagedPDFFile) {
         const pdfResult: any = await this.apiService.uploadRecipePDF(
-          this.selectedRecipe.id, this.selectedRecipe.title, this.stagedPDFFile
+          this.selectedRecipe.id, currentTitle, this.stagedPDFFile
         ).toPromise();
         if (pdfResult?.cdn_url) {
           this.selectedRecipe.recipePDFLink = pdfResult.cdn_url;
