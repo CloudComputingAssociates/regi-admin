@@ -24,6 +24,7 @@ export class MealsAdminComponent implements OnInit {
   // Detail form controls
   shareCandidateControl = new FormControl<boolean>(false);
   shareApprovedControl = new FormControl<boolean>(false);
+  isYEHControl = new FormControl<boolean>(false);
   videoLinkControl = new FormControl<string | null>(null);
   recipeLinkControl = new FormControl<string | null>(null);
 
@@ -98,22 +99,17 @@ export class MealsAdminComponent implements OnInit {
   private populateFormFields(plan: MealPlanSummary): void {
     this.shareCandidateControl.setValue(plan.shareCandidate ?? false);
     this.shareApprovedControl.setValue(plan.shareApproved ?? false);
+    this.isYEHControl.setValue(plan.isYeh ?? false);
     this.videoLinkControl.setValue(plan.prepVideoLink ?? null);
     this.recipeLinkControl.setValue(plan.recipeLink ?? null);
     this.originalVideoLink = plan.prepVideoLink ?? null;
     this.originalRecipeLink = plan.recipeLink ?? null;
 
-    if (plan.shareApproved) {
-      this.videoLinkControl.disable();
-      this.recipeLinkControl.disable();
-      this.shareCandidateControl.disable();
-      this.shareApprovedControl.disable();
-    } else {
-      this.videoLinkControl.enable();
-      this.recipeLinkControl.enable();
-      this.shareCandidateControl.enable();
-      this.shareApprovedControl.enable();
-    }
+    this.videoLinkControl.enable();
+    this.recipeLinkControl.enable();
+    this.shareCandidateControl.enable();
+    this.shareApprovedControl.enable();
+    this.isYEHControl.enable();
   }
 
   onShareApprovedChange(): void {
@@ -126,6 +122,20 @@ export class MealsAdminComponent implements OnInit {
         return;
       }
       this.shareCandidateControl.setValue(false);
+      this.isYEHControl.setValue(false);
+    }
+  }
+
+  onShareCandidateChange(): void {
+    if (this.shareCandidateControl.value) {
+      this.isYEHControl.setValue(false);
+    }
+  }
+
+  onIsYEHChange(): void {
+    if (this.isYEHControl.value) {
+      this.shareCandidateControl.setValue(false);
+      this.shareApprovedControl.setValue(false);
     }
   }
 
@@ -140,7 +150,8 @@ export class MealsAdminComponent implements OnInit {
   get hasShareChanges(): boolean {
     if (!this.selectedPlan) return false;
     return this.shareApprovedControl.value !== this.selectedPlan.shareApproved ||
-           this.shareCandidateControl.value !== this.selectedPlan.shareCandidate;
+           this.shareCandidateControl.value !== this.selectedPlan.shareCandidate ||
+           this.isYEHControl.value !== (this.selectedPlan.isYeh ?? false);
   }
 
   get isApproved(): boolean {
@@ -193,7 +204,16 @@ export class MealsAdminComponent implements OnInit {
     if (!this.selectedPlan || !this.hasShareChanges) return;
     this.isSaving = true;
     try {
+      const update: any = {};
+
+      if (this.isYEHControl.value !== (this.selectedPlan.isYeh ?? false)) {
+        update.isYEH = this.isYEHControl.value;
+        this.selectedPlan.isYeh = this.isYEHControl.value ?? false;
+      }
+
       if (this.shareApprovedControl.value !== this.selectedPlan.shareApproved) {
+        update.shareApproved = this.shareApprovedControl.value;
+        // Use the approve endpoint for share approval
         await this.apiService.setMealPlanShareApproval(
           this.selectedPlan.id,
           this.shareApprovedControl.value ?? false
@@ -202,13 +222,21 @@ export class MealsAdminComponent implements OnInit {
         if (this.shareApprovedControl.value) {
           this.selectedPlan.shareCandidate = false;
           this.shareCandidateControl.setValue(false);
-          this.videoLinkControl.disable();
-          this.recipeLinkControl.disable();
-          this.shareCandidateControl.disable();
-          this.shareApprovedControl.disable();
         }
+        delete update.shareApproved; // already handled by approve endpoint
       }
-      this.snackBar.open('Approval saved', 'Dismiss', { duration: 2000 });
+
+      if (this.shareCandidateControl.value !== this.selectedPlan.shareCandidate) {
+        update.shareCandidate = this.shareCandidateControl.value;
+        this.selectedPlan.shareCandidate = this.shareCandidateControl.value ?? false;
+      }
+
+      // Send remaining updates via the meal update endpoint
+      if (Object.keys(update).length > 0) {
+        await this.apiService.updateAdminMealPlan(this.selectedPlan.id, update).toPromise();
+      }
+
+      this.snackBar.open('Saved', 'Dismiss', { duration: 2000 });
       this.loadMealPlans();
     } catch {
       this.snackBar.open('Failed to save approval', 'Dismiss', { duration: 3000 });

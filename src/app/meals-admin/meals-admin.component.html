@@ -60,16 +60,18 @@
         <span class="meta-item"><strong>Protein:</strong> {{ selectedPlan.totalProteinG?.toFixed(0) ?? 0 }}g</span>
         <span class="meta-item"><strong>Fat:</strong> {{ selectedPlan.totalFatG?.toFixed(0) ?? 0 }}g</span>
         <span class="meta-item"><strong>Carb:</strong> {{ selectedPlan.totalCarbG?.toFixed(0) ?? 0 }}g</span>
+        <span class="meta-item"><strong>Servings:</strong> {{ selectedPlan.servings ?? 1 }}</span>
       </div>
 
-      <!-- Share checkboxes + save -->
+      <!-- Status checkboxes + save -->
       <div class="share-row">
-        <mat-checkbox [formControl]="shareCandidateControl">Community Candidate</mat-checkbox>
-        <mat-checkbox [formControl]="shareApprovedControl" (change)="onShareApprovedChange()">Community Share Approved</mat-checkbox>
+        <mat-checkbox [formControl]="isYEHControl" (change)="onIsYEHChange()">YEH Approved</mat-checkbox>
+        <span class="community-label">Community:</span>
+        <mat-checkbox [formControl]="shareCandidateControl" (change)="onShareCandidateChange()">Candidate</mat-checkbox>
+        <mat-checkbox [formControl]="shareApprovedControl" (change)="onShareApprovedChange()">Approved</mat-checkbox>
         <button mat-flat-button class="save-btn" (click)="saveApproval()" [disabled]="!hasShareChanges || isSaving">
           <mat-icon>check</mat-icon> Save
         </button>
-        <span *ngIf="isApproved" class="approved-badge">&#10003; APPROVED</span>
       </div>
 
       <!-- Meal Image -->

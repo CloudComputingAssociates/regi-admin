@@ -15,6 +15,7 @@ export interface MealPlanSummary {
   mealImageThumbnail?: string;
   prepVideoLink?: string;
   recipeLink?: string;
+  servings: number;
   shareCandidate: boolean;
   shareApproved: boolean;
   userName?: string;

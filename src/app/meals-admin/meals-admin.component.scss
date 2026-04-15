@@ -212,9 +212,16 @@
   border-radius: 4px;
   border: 1px solid #ffecb3;
 
+  .community-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin-left: 8px;
+  }
+
   .save-btn {
-    background-color: #4caf50;
-    color: white;
+    background-color: #4caf50 !important;
+    color: white !important;
     font-size: 12px;
   }
 }
