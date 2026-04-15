@@ -195,7 +195,7 @@ export class YehApiService {
   }
 
   updateAdminMealPlan(mealId: number, update: any): Observable<any> {
-    return this.http.patch<any>(`${this.baseUrl}/meal/${mealId}`, update);
+    return this.http.put<any>(`${this.baseUrl}/meal/${mealId}`, update);
   }
 
   setMealPlanShareApproval(mealId: number, approved: boolean): Observable<any> {
