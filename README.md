@@ -1,4 +1,4 @@
-"$ Regi Admin"
+"$ Regi Admin "
 
 PROD:  https://regi-admin.regimenu.com
 DEV:   https://dev--regi-admin.netlify.app
