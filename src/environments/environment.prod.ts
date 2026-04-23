@@ -1,21 +1,12 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
-//declare const AUTH0_DOMAIN: string;
-//declare const AUTH0_CLIENT_ID: string;
-
-declare var process: {
-  env: {
-    [key: string]: string | undefined
-  }
-};
-
 
 export const environment = {
-  production: false,
+  production: true,
   auth0: {
-    domain: '___AUTH0_DOMAIN___',    // Placeholder
-    clientId: '___AUTH0_CLIENT_ID___', // Placeholder
+    domain: 'dev-sj1bmj8255bwte7r.us.auth0.com',
+    clientId: '9KHWGCfSSg9wUr1oREiUYIgP15EDIppJ',
     redirectUri: window.location.origin,
   },
   apiUrl: 'https://api.regimenu.net/api'
