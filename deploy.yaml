@@ -16,7 +16,7 @@ spec:
     spec:
       containers: 
       - name: ng10e2e
-        image: mtmazurik/foods-tool-ui
+        image: mtmazurik/regi-admin
         ports:
         - containerPort: 443
         - containerPort: 80

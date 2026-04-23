@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { YehApiService } from '../services/yeh-api.service';
+import { RegiApiService } from '../services/regi-api.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Food, FoodMetadataUpdate, FatSecretCompareResponse } from '../models/food.model';
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
@@ -83,7 +83,7 @@ export class FoodsComponent implements OnInit {
   };
 
   constructor(
-    private foodsService: YehApiService,
+    private foodsService: RegiApiService,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
   ) {}

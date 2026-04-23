@@ -33,12 +33,14 @@
       "Bash(git reset --hard *)"
     ],
     "additionalDirectories": [
-      "c:\\git\\foods-tool-ui\\src\\app\\models",
-      "c:\\git\\foods-tool-ui\\src\\app\\foods",
-      "c:\\git\\foods-tool-ui\\src\\app",
-      "c:\\git\\yeh-api\\services",
-      "c:\\git\\yeh-api\\schemas",
-      "c:\\git\\yeh-api\\repos"
+      "c:\\git\\regi-admin\\src\\app\\models",
+      "c:\\git\\regi-admin\\src\\app\\foods",
+      "c:\\git\\regi-admin\\src\\app",
+      "c:\\git\\regi-api\\services",
+      "c:\\git\\regi-api\\schemas",
+      "c:\\git\\regi-api\\repos",
+      "c:\\git\\regi-image\\services",
+      "c:\\git\\regi-image\\handlers"
     ]
   }
 }

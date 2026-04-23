@@ -18,7 +18,7 @@ export const environment = {
     clientId: '___AUTH0_CLIENT_ID___', // Placeholder
     redirectUri: window.location.origin,
   },
-  apiUrl: 'https://yehapi.cloudcomputingassociates.net/api'
+  apiUrl: 'https://api.regimenu.net/api'
 };
 
 /*

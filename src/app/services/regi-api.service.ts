@@ -21,16 +21,13 @@ interface ProductUploadResponse {
 @Injectable({
   providedIn: 'root'
 })
-export class YehApiService {
+export class RegiApiService {
   private baseUrl = environment.apiUrl;
-
-  // Image API base URL (yeh-image on port 8081)
-  private imageApiUrl = environment.apiUrl.replace(':8080', ':8081').replace('/api', '');
 
   constructor(private http: HttpClient) { }
 
   // ========================================
-  // FOODS API ENDPOINTS (yeh-api)
+  // FOODS API ENDPOINTS (regi-api)
   // ========================================
 
   searchFoods(query: string, limit?: number): Observable<any> {
@@ -87,7 +84,7 @@ export class YehApiService {
   }
 
   // ========================================
-  // IMAGE API ENDPOINTS (yeh-image)
+  // IMAGE API ENDPOINTS (regi-api; background processing by regi-image)
   // ========================================
 
   uploadNutritionImage(
@@ -106,7 +103,7 @@ export class YehApiService {
     }
 
     return this.http.post<NutritionUploadResponse>(
-      `${this.imageApiUrl}/api/image/upload/nutrition`,
+      `${this.baseUrl}/image/upload/nutrition`,
       formData
     );
   }
@@ -117,13 +114,13 @@ export class YehApiService {
     formData.append('image', image);
 
     return this.http.post<ProductUploadResponse>(
-      `${this.imageApiUrl}/api/image/upload/product`,
+      `${this.baseUrl}/image/upload/product`,
       formData
     );
   }
 
   getImageUrls(description: string, type?: 'product' | 'nutrition'): Observable<any> {
-    let url = `${this.imageApiUrl}/api/image/url/?description=${encodeURIComponent(description)}`;
+    let url = `${this.baseUrl}/image/url/?description=${encodeURIComponent(description)}`;
     if (type) {
       url += `&type=${type}`;
     }
@@ -131,11 +128,11 @@ export class YehApiService {
   }
 
   getImageProcessingStatus(): Observable<any> {
-    return this.http.get<any>(`${this.imageApiUrl}/api/image/status`);
+    return this.http.get<any>(`${this.baseUrl}/image/status`);
   }
 
   getImageApiHealth(): Observable<any> {
-    return this.http.get<any>(`${this.imageApiUrl}/api/image/health`);
+    return this.http.get<any>(`${this.baseUrl}/image/health`);
   }
 
   // ========================================
@@ -234,7 +231,7 @@ export class YehApiService {
     formData.append('recipeId', recipeId.toString());
     formData.append('title', title);
     formData.append('image', imageFile);
-    return this.http.post<any>(`${this.imageApiUrl}/api/image/upload/recipe-image`, formData);
+    return this.http.post<any>(`${this.baseUrl}/image/upload/recipe-image`, formData);
   }
 
   uploadRecipePDF(recipeId: number, title: string, pdfFile: File): Observable<any> {
@@ -242,6 +239,6 @@ export class YehApiService {
     formData.append('recipeId', recipeId.toString());
     formData.append('title', title);
     formData.append('pdf', pdfFile);
-    return this.http.post<any>(`${this.imageApiUrl}/api/image/upload/recipe-pdf`, formData);
+    return this.http.post<any>(`${this.baseUrl}/image/upload/recipe-pdf`, formData);
   }
 }

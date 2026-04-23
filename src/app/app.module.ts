@@ -29,7 +29,7 @@ import { AuthModule } from '@auth0/auth0-angular'
 import { LoginComponent } from './login/login.component';
 import { FoodsComponent } from './foods/foods.component';
 import { UserFoodsAdminComponent } from './user-foods-admin/user-foods-admin.component';
-import { YehApiService } from './services/yeh-api.service';
+import { RegiApiService } from './services/regi-api.service';
 import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
 import { FatsecretCompareComponent } from './fatsecret-compare/fatsecret-compare.component';
@@ -77,17 +77,17 @@ import { SafePipe } from './pipes/safe.pipe';
       clientId: environment.auth0.clientId,
       authorizationParams: {
         redirect_uri: environment.auth0.redirectUri,
-        audience: 'https://yehapi.cloudcomputingassociates.net'
+        audience: 'https://api.regimenu.net'
       },
       httpInterceptor: {
         allowedList: [
-          'https://yehapi.cloudcomputingassociates.net/api/*'
+          'https://api.regimenu.net/api/*'
         ]
       }
     })
   ],
   providers: [
-    YehApiService,
+    RegiApiService,
     { provide: HTTP_INTERCEPTORS, useClass: AuthHttpInterceptor, multi: true }
   ],
   bootstrap: [AppComponent],

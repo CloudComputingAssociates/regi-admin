@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { YehApiService } from '../services/yeh-api.service';
+import { RegiApiService } from '../services/regi-api.service';
 import { MealPlanSummary, MealPlanSource } from '../models/meal-plan.model';
 
 @Component({
@@ -33,7 +33,7 @@ export class MealsAdminComponent implements OnInit {
   private originalRecipeLink: string | null = null;
 
   constructor(
-    private apiService: YehApiService,
+    private apiService: RegiApiService,
     private snackBar: MatSnackBar
   ) {}
 

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { YehApiService } from '../services/yeh-api.service';
+import { RegiApiService } from '../services/regi-api.service';
 
 interface ImageUploadResponse {
   success: boolean;
@@ -27,8 +27,6 @@ export class ImageUploadComponent implements OnInit, OnChanges {
   @Output() imagesUploaded = new EventEmitter<ImageUploadResponse>();
   @Output() refreshFood = new EventEmitter<void>();
 
-  private baseUrl = 'https://foodsapi.cloudcomputingassociates.net/api/v1';
-
   // Upload states
   isUploading = false;
   nutritionImageFile: File | null = null;
@@ -49,7 +47,7 @@ export class ImageUploadComponent implements OnInit, OnChanges {
   productImageDisplayName: string = '';
 
   constructor(
-    private foodsService: YehApiService,
+    private foodsService: RegiApiService,
     private snackBar: MatSnackBar
   ) {}
 

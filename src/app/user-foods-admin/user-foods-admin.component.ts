@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { YehApiService } from '../services/yeh-api.service';
+import { RegiApiService } from '../services/regi-api.service';
 import { AdminUser } from '../models/user.model';
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
@@ -90,7 +90,7 @@ export class UserFoodsAdminComponent {
   ];
 
   constructor(
-    private apiService: YehApiService,
+    private apiService: RegiApiService,
     private snackBar: MatSnackBar
   ) {
     this.apiService.getCategories().subscribe({

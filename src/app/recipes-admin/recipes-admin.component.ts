@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { YehApiService } from '../services/yeh-api.service';
+import { RegiApiService } from '../services/regi-api.service';
 import { Recipe } from '../models/recipe.model';
 
 @Component({
@@ -41,7 +41,7 @@ export class RecipesAdminComponent {
   };
 
   constructor(
-    private apiService: YehApiService,
+    private apiService: RegiApiService,
     private snackBar: MatSnackBar
   ) {}
 

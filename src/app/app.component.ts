@@ -9,7 +9,7 @@ import { map, catchError, switchMap } from 'rxjs/operators';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'Foods App';
+  title = 'Regi Admin';
   isAdmin$: Observable<boolean>;
 
   constructor(public auth: AuthService) {
@@ -20,7 +20,7 @@ export class AppComponent {
           map(token => {
             try {
               const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-              const roles: string[] = payload['https://yehapi.cloudcomputingassociates.net/roles'] || [];
+              const roles: string[] = payload['https://api.regimenu.net/roles'] || [];
               return roles.includes('Admin');
             } catch {
               return false;
