@@ -1,6 +1,11 @@
 [build]
   command = "ng build --configuration production && node replace.js"
-  publish = "dist"
+  publish = "dist/browser"
 
 [context.production.environment]
   ANGULAR_ENV = "production"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
