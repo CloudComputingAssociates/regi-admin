@@ -31,6 +31,7 @@ export class CommandActionComponent implements OnInit {
   // TARGETS state
   // ========================================
   targets: CmdTarget[] = [];
+  filteredTargets: CmdTarget[] = [];
   selectedTarget: CmdTarget | null = null;
   isLoadingTargets = false;
   isSavingTarget = false;
@@ -55,6 +56,7 @@ export class CommandActionComponent implements OnInit {
   // ACTIONS state
   // ========================================
   actions: CmdAction[] = [];
+  filteredActions: CmdAction[] = [];
   selectedAction: CmdAction | null = null;
   isLoadingActions = false;
   isSavingAction = false;
@@ -72,6 +74,7 @@ export class CommandActionComponent implements OnInit {
   // PHRASINGS state
   // ========================================
   phrasings: CmdPhrasing[] = [];
+  filteredPhrasings: CmdPhrasing[] = [];
   selectedPhrasing: CmdPhrasing | null = null;
   isLoadingPhrasings = false;
   isSavingPhrasing = false;
@@ -104,6 +107,11 @@ export class CommandActionComponent implements OnInit {
     this.loadTargets();
     this.loadActions();
     this.loadPhrasings();
+
+    // Live-filter the sidebar lists as the user types
+    this.targetSearchControl.valueChanges.subscribe(() => this.recomputeFilteredTargets());
+    this.actionSearchControl.valueChanges.subscribe(() => this.recomputeFilteredActions());
+    this.phrasingSearchControl.valueChanges.subscribe(() => this.recomputeFilteredPhrasings());
 
     // Keep chatSettable enabled state in sync with dependent fields
     this.tRenderChannelCtrl.valueChanges.subscribe(() => this.refreshChatSettableEnablement());
@@ -139,24 +147,28 @@ export class CommandActionComponent implements OnInit {
   loadTargets(): void {
     this.isLoadingTargets = true;
     this.apiService.listCmdTargets().subscribe({
-      next: (rows) => {
-        this.targets = rows || [];
+      next: (rows: any) => {
+        this.targets = Array.isArray(rows) ? rows : (rows?.targets ?? rows?.data ?? []);
+        this.recomputeFilteredTargets();
         this.isLoadingTargets = false;
       },
       error: () => {
+        this.targets = [];
+        this.recomputeFilteredTargets();
         this.isLoadingTargets = false;
         this.snackBar.open('Failed to load targets', 'Close', { duration: 5000 });
       }
     });
   }
 
-  get filteredTargets(): CmdTarget[] {
+  private recomputeFilteredTargets(): void {
     const q = (this.targetSearchControl.value || '').trim().toLowerCase();
-    if (!q) return this.targets;
-    return this.targets.filter(t =>
-      t.widget.toLowerCase().includes(q) ||
-      t.label.toLowerCase().includes(q)
-    );
+    this.filteredTargets = !q
+      ? this.targets.slice()
+      : this.targets.filter(t =>
+          t.widget.toLowerCase().includes(q) ||
+          t.label.toLowerCase().includes(q)
+        );
   }
 
   selectTarget(t: CmdTarget): void {
@@ -218,6 +230,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.createCmdTarget(stub).subscribe({
       next: (created) => {
         this.targets = [created, ...this.targets];
+        this.recomputeFilteredTargets();
         this.selectTarget(created);
         this.snackBar.open('Target created', 'Close', { duration: 2000 });
       },
@@ -298,6 +311,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.deleteCmdTarget(id).subscribe({
       next: () => {
         this.targets = this.targets.filter(t => t.targetId !== id);
+        this.recomputeFilteredTargets();
         this.selectedTarget = null;
         this.originalTarget = null;
         this.snackBar.open('Target deleted', 'Close', { duration: 2000 });
@@ -313,21 +327,25 @@ export class CommandActionComponent implements OnInit {
   loadActions(): void {
     this.isLoadingActions = true;
     this.apiService.listCmdActions().subscribe({
-      next: (rows) => {
-        this.actions = rows || [];
+      next: (rows: any) => {
+        this.actions = Array.isArray(rows) ? rows : (rows?.actions ?? rows?.data ?? []);
+        this.recomputeFilteredActions();
         this.isLoadingActions = false;
       },
       error: () => {
+        this.actions = [];
+        this.recomputeFilteredActions();
         this.isLoadingActions = false;
         this.snackBar.open('Failed to load actions', 'Close', { duration: 5000 });
       }
     });
   }
 
-  get filteredActions(): CmdAction[] {
+  private recomputeFilteredActions(): void {
     const q = (this.actionSearchControl.value || '').trim().toLowerCase();
-    if (!q) return this.actions;
-    return this.actions.filter(a => a.verb.toLowerCase().includes(q));
+    this.filteredActions = !q
+      ? this.actions.slice()
+      : this.actions.filter(a => a.verb.toLowerCase().includes(q));
   }
 
   selectAction(a: CmdAction): void {
@@ -355,6 +373,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.createCmdAction(stub).subscribe({
       next: (created) => {
         this.actions = [created, ...this.actions];
+        this.recomputeFilteredActions();
         this.selectAction(created);
         this.snackBar.open('Action created', 'Close', { duration: 2000 });
       },
@@ -414,6 +433,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.deleteCmdAction(id).subscribe({
       next: () => {
         this.actions = this.actions.filter(a => a.actionId !== id);
+        this.recomputeFilteredActions();
         this.selectedAction = null;
         this.originalAction = null;
         this.snackBar.open('Action deleted', 'Close', { duration: 2000 });
@@ -431,27 +451,31 @@ export class CommandActionComponent implements OnInit {
     const targetId = this.phrasingTargetFilterCtrl.value;
     const filters = targetId !== null && targetId !== undefined ? { targetId } : undefined;
     this.apiService.listCmdPhrasings(filters).subscribe({
-      next: (rows) => {
-        this.phrasings = rows || [];
+      next: (rows: any) => {
+        this.phrasings = Array.isArray(rows) ? rows : (rows?.phrasings ?? rows?.data ?? []);
+        this.recomputeFilteredPhrasings();
         this.isLoadingPhrasings = false;
       },
       error: () => {
+        this.phrasings = [];
+        this.recomputeFilteredPhrasings();
         this.isLoadingPhrasings = false;
         this.snackBar.open('Failed to load phrasings', 'Close', { duration: 5000 });
       }
     });
   }
 
+  private recomputeFilteredPhrasings(): void {
+    const q = (this.phrasingSearchControl.value || '').trim().toLowerCase();
+    this.filteredPhrasings = !q
+      ? this.phrasings.slice()
+      : this.phrasings.filter(p => p.phrase.toLowerCase().includes(q));
+  }
+
   onPhrasingTargetFilterChange(): void {
     this.selectedPhrasing = null;
     this.originalPhrasing = null;
     this.loadPhrasings();
-  }
-
-  get filteredPhrasings(): CmdPhrasing[] {
-    const q = (this.phrasingSearchControl.value || '').trim().toLowerCase();
-    if (!q) return this.phrasings;
-    return this.phrasings.filter(p => p.phrase.toLowerCase().includes(q));
   }
 
   targetLabel(targetId: number | null | undefined): string {
@@ -497,6 +521,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.createCmdPhrasing(stub).subscribe({
       next: (created) => {
         this.phrasings = [created, ...this.phrasings];
+        this.recomputeFilteredPhrasings();
         this.selectPhrasing(created);
         this.snackBar.open('Phrasing created', 'Close', { duration: 2000 });
       },
@@ -553,6 +578,7 @@ export class CommandActionComponent implements OnInit {
     this.apiService.deleteCmdPhrasing(id).subscribe({
       next: () => {
         this.phrasings = this.phrasings.filter(p => p.phrasingId !== id);
+        this.recomputeFilteredPhrasings();
         this.selectedPhrasing = null;
         this.originalPhrasing = null;
         this.snackBar.open('Phrasing deleted', 'Close', { duration: 2000 });
