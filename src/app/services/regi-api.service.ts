@@ -3,7 +3,15 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Food, FoodMetadataUpdate, FatSecretCompareResponse, FatSecretOverwriteRequest } from '../models/food.model';
+import { CuratedUserFoodListing, UserFoodUsage } from '../models/user-food.model';
 import { Widget, Command } from '../models/command-widget.model';
+
+export type CurationFlag = 'candidate' | 'approved' | 'all';
+
+interface CuratedUserFoodsResponse {
+  count: number;
+  foods: CuratedUserFoodListing[];
+}
 
 interface NutritionUploadResponse {
   success: boolean;
@@ -199,14 +207,36 @@ export class RegiApiService {
     return this.http.patch<any>(`${this.baseUrl}/admin/userfoods/${userFoodId}`, update);
   }
 
-  // Approve or reject a share candidate
-  setShareApproval(userFoodId: number, approved: boolean): Observable<any> {
-    return this.http.patch<any>(`${this.baseUrl}/userfoods/${userFoodId}/approve`, { approved });
+  // Curation review grid. Combo filter: author display-name substring, author email
+  // substring, flag (candidate | approved | all). GET /api/admin/userfoods/candidates
+  // -> { count, foods: CuratedUserFoodListing[] }.
+  getCuratedUserFoods(name?: string, email?: string, flag?: CurationFlag): Observable<CuratedUserFoodsResponse> {
+    let params = new HttpParams();
+    if (name) params = params.set('name', name);
+    if (email) params = params.set('email', email);
+    if (flag) params = params.set('flag', flag);
+    return this.http.get<CuratedUserFoodsResponse>(`${this.baseUrl}/admin/userfoods/candidates`, { params });
   }
 
-  // Get all share candidates (ShareCandidate=1, pending review)
-  getShareCandidates(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/userfoods/candidates`);
+  // Set RegiApproved=1 and clear RegiApprovedCandidate. POST /api/admin/userfoods/{id}/approve.
+  approveUserFood(userFoodId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/admin/userfoods/${userFoodId}/approve`, {});
+  }
+
+  // Set RegiApproved=0 (candidate flag untouched). POST /api/admin/userfoods/{id}/demote.
+  demoteUserFood(userFoodId: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/admin/userfoods/${userFoodId}/demote`, {});
+  }
+
+  // Per-table usage counts for the delete confirm. GET /api/admin/userfoods/{id}/usages.
+  getUserFoodUsages(userFoodId: number): Observable<UserFoodUsage> {
+    return this.http.get<UserFoodUsage>(`${this.baseUrl}/admin/userfoods/${userFoodId}/usages`);
+  }
+
+  // Delete a user food + its UserNutritionFacts. 409 (with { error, usages }) when referenced.
+  // DELETE /api/admin/userfoods/{id}.
+  deleteUserFood(userFoodId: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/admin/userfoods/${userFoodId}`);
   }
 
   // Get food categories

@@ -23,12 +23,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialogModule } from '@angular/material/dialog';
 
 import { AppComponent } from './app.component';
 import { AuthModule } from '@auth0/auth0-angular'
 import { LoginComponent } from './login/login.component';
 import { FoodsComponent } from './foods/foods.component';
 import { UserFoodsAdminComponent } from './user-foods-admin/user-foods-admin.component';
+import { DeleteFoodDialogComponent } from './user-foods-admin/delete-food-dialog.component';
 import { RegiApiService } from './services/regi-api.service';
 import { UriListComponent } from './uri-list/uri-list.component';
 import { ImageUploadComponent } from './image-upload/image-upload.component';
@@ -43,6 +45,7 @@ import { SafePipe } from './pipes/safe.pipe';
     LoginComponent,
     FoodsComponent,
     UserFoodsAdminComponent,
+    DeleteFoodDialogComponent,
     ImageUploadComponent,
     FatsecretCompareComponent,
     MealsAdminComponent,
@@ -71,6 +74,7 @@ import { SafePipe } from './pipes/safe.pipe';
     MatCheckboxModule,
     MatSelectModule,
     MatTabsModule,
+    MatDialogModule,
     UriListComponent,
     AuthModule.forRoot({
       domain: environment.auth0.domain,

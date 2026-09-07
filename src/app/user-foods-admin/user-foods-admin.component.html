@@ -16,14 +16,82 @@
              (keyup.enter)="applyFilters()"
              placeholder="Email address...">
     </mat-form-field>
-    <mat-checkbox [formControl]="communityCandidateFilterControl">Community Candidate</mat-checkbox>
-    <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isSearchingUsers">
+    <mat-form-field appearance="fill" class="flag-field">
+      <mat-label>Filter</mat-label>
+      <mat-select [formControl]="filterModeControl">
+        <mat-option value="browse">Browse by user</mat-option>
+        <mat-option value="candidate">Candidates</mat-option>
+        <mat-option value="approved">Approved</mat-option>
+        <mat-option value="all">All</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <button mat-flat-button class="apply-btn" (click)="applyFilters()" [disabled]="isSearchingUsers || isLoadingCandidates">
       <mat-icon>keyboard_return</mat-icon>
     </button>
   </div>
 
-  <!-- User Results List -->
-  <div class="user-results" *ngIf="userResults.length > 0">
+  <!-- Candidates grid (curation flag selected) -->
+  <ng-container *ngIf="isCandidatesMode">
+    <div class="loading" *ngIf="isLoadingCandidates">
+      <mat-spinner diameter="30"></mat-spinner>
+      <span>Loading candidates...</span>
+    </div>
+
+    <div class="candidates-grid table-responsive" *ngIf="!isLoadingCandidates && candidateRows.length > 0">
+      <table mat-table [dataSource]="candidateRows" class="candidate-table">
+        <ng-container matColumnDef="authorName">
+          <th mat-header-cell *matHeaderCellDef> Author </th>
+          <td mat-cell *matCellDef="let row"> {{ row.authorName || '—' }} </td>
+        </ng-container>
+        <ng-container matColumnDef="authorEmail">
+          <th mat-header-cell *matHeaderCellDef> Email </th>
+          <td mat-cell *matCellDef="let row"> {{ row.authorEmail || '—' }} </td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef> Food </th>
+          <td mat-cell *matCellDef="let row" [matTooltip]="row.description">
+            {{ row.shortDescription || row.description }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="regiApprovedCandidate">
+          <th mat-header-cell *matHeaderCellDef> Candidate </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-icon *ngIf="row.regiApprovedCandidate" class="flag-yes">check</mat-icon>
+            <span *ngIf="!row.regiApprovedCandidate">—</span>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="regiApproved">
+          <th mat-header-cell *matHeaderCellDef> RegiApproved </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [checked]="row.regiApproved"
+                          (change)="onCandidateApprovedToggle(row, $event.checked)">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef> Created </th>
+          <td mat-cell *matCellDef="let row"> {{ row.createdAt | date:'yyyy-MM-dd' }} </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="warn" (click)="deleteCandidate(row)" matTooltip="Delete food">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="candidateColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: candidateColumns;"></tr>
+      </table>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoadingCandidates && candidateRows.length === 0">
+      No foods found.
+    </div>
+  </ng-container>
+
+  <!-- User Results List (browse mode) -->
+  <div class="user-results" *ngIf="!isCandidatesMode && userResults.length > 0">
     <div class="user-row"
          *ngFor="let user of userResults"
          [class.selected]="selectedUser?.id === user.id"
@@ -35,20 +103,20 @@
   </div>
 
   <!-- Selected User Banner -->
-  <div class="selected-user-banner" *ngIf="selectedUser">
+  <div class="selected-user-banner" *ngIf="!isCandidatesMode && selectedUser">
     <span class="user-label">User:</span>
     <span class="user-info">{{ selectedUser.display_name || selectedUser.email }}</span>
     <span class="user-id-badge">({{ selectedUser.id }})</span>
   </div>
 
   <!-- Loading indicator -->
-  <div class="loading" *ngIf="isLoadingFoods">
+  <div class="loading" *ngIf="!isCandidatesMode && isLoadingFoods">
     <mat-spinner diameter="30"></mat-spinner>
     <span>Loading foods...</span>
   </div>
 
-  <!-- Food list + detail -->
-  <div class="results-layout" *ngIf="foods.length > 0">
+  <!-- Food list + detail (browse mode) -->
+  <div class="results-layout" *ngIf="!isCandidatesMode && foods.length > 0">
 
     <!-- Left sidebar: Food list -->
     <div class="results-sidebar">
@@ -57,54 +125,36 @@
                           (selectionChange)="onFoodSelected($event.options[0]?.value)"
                           (keydown)="onListKeydown($event)">
 
-        <!-- Flat list mode (community candidates) -->
-        <ng-container *ngIf="showingCandidatesFlat">
-          <mat-list-option *ngFor="let food of foods; let i = index"
-                           [value]="i"
-                           [selected]="i === selectedIndex"
-                           [matTooltip]="food?.description || ''"
+        <!-- Grouped list (user's foods) -->
+        <ng-container *ngFor="let group of groupedFoods">
+          <div class="category-header" (click)="$event.stopPropagation(); toggleCategoryCollapse(group)">
+            <mat-icon class="collapse-icon" [class.collapsed]="group.collapsed">expand_more</mat-icon>
+            <span class="category-name">{{ group.category }}</span>
+            <span class="category-count">{{ group.foods.length }}</span>
+          </div>
+          <mat-list-option *ngFor="let item of group.foods"
+                           [value]="item.flatIndex"
+                           [selected]="item.flatIndex === selectedIndex"
+                           [matTooltip]="item.food?.description || ''"
                            matTooltipPosition="right"
+                           [style.display]="group.collapsed ? 'none' : null"
                            class="food-list-item">
             <div class="food-item-content">
               <div class="food-thumbnail">
-                <img *ngIf="food?.foodImageThumbnail" [src]="food.foodImageThumbnail" alt="" class="thumbnail-img">
-                <div *ngIf="!food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
+                <img *ngIf="item.food?.foodImageThumbnail" [src]="item.food.foodImageThumbnail" alt="" class="thumbnail-img">
+                <div *ngIf="!item.food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
               </div>
               <span class="food-description">
-                {{ truncateDescription(food?.shortDescription || food?.description) }}
+                {{ truncateDescription(item.food?.shortDescription || item.food?.description) }}
               </span>
-              <span class="food-id">{{ food?.id }}</span>
+              <span class="food-id">{{ item.food?.id }}</span>
+              <button mat-icon-button color="warn" class="row-delete-btn"
+                      (click)="$event.stopPropagation(); deleteSelectedFood(item.food)"
+                      matTooltip="Delete food">
+                <mat-icon>delete</mat-icon>
+              </button>
             </div>
           </mat-list-option>
-        </ng-container>
-
-        <!-- Grouped list mode (user's foods) -->
-        <ng-container *ngIf="!showingCandidatesFlat">
-          <ng-container *ngFor="let group of groupedFoods">
-            <div class="category-header" (click)="$event.stopPropagation(); toggleCategoryCollapse(group)">
-              <mat-icon class="collapse-icon" [class.collapsed]="group.collapsed">expand_more</mat-icon>
-              <span class="category-name">{{ group.category }}</span>
-              <span class="category-count">{{ group.foods.length }}</span>
-            </div>
-            <mat-list-option *ngFor="let item of group.foods"
-                             [value]="item.flatIndex"
-                             [selected]="item.flatIndex === selectedIndex"
-                             [matTooltip]="item.food?.description || ''"
-                             matTooltipPosition="right"
-                             [style.display]="group.collapsed ? 'none' : null"
-                             class="food-list-item">
-              <div class="food-item-content">
-                <div class="food-thumbnail">
-                  <img *ngIf="item.food?.foodImageThumbnail" [src]="item.food.foodImageThumbnail" alt="" class="thumbnail-img">
-                  <div *ngIf="!item.food?.foodImageThumbnail" class="thumbnail-placeholder"></div>
-                </div>
-                <span class="food-description">
-                  {{ truncateDescription(item.food?.shortDescription || item.food?.description) }}
-                </span>
-                <span class="food-id">{{ item.food?.id }}</span>
-              </div>
-            </mat-list-option>
-          </ng-container>
         </ng-container>
       </mat-selection-list>
     </div>
@@ -149,8 +199,10 @@
                     <mat-option *ngFor="let cat of categoryOptions" [value]="cat.id">{{cat.name}}</mat-option>
                   </mat-select>
                 </mat-form-field>
-                <mat-checkbox [formControl]="shareCandidateControl">Community Candidate</mat-checkbox>
-                <mat-checkbox [formControl]="shareApprovedControl" (change)="onShareApprovedChange()">Community Share Approved</mat-checkbox>
+                <mat-checkbox [formControl]="regiApprovedCandidateControl">RegiApproved Candidate</mat-checkbox>
+                <mat-checkbox [formControl]="regiApprovedControl"
+                              [disabled]="isTogglingApproval"
+                              (change)="onRegiApprovedToggle()">RegiApproved</mat-checkbox>
               </div>
 
               <!-- Row 3: Short Description (full width) -->

@@ -1,10 +1,17 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RegiApiService } from '../services/regi-api.service';
+import { MatDialog } from '@angular/material/dialog';
+import { RegiApiService, CurationFlag } from '../services/regi-api.service';
 import { ServingUnitsService } from '../services/serving-units.service';
 import { AdminUser } from '../models/user.model';
+import { CuratedUserFoodListing } from '../models/user-food.model';
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
+import { DeleteFoodDialogComponent, DeleteFoodDialogData } from './delete-food-dialog.component';
+
+// Filter mode: 'browse' keeps the per-user lookup (name/email -> users -> foods -> detail);
+// the three curation flags drive the candidates grid via GET /admin/userfoods/candidates.
+type FilterMode = 'browse' | CurationFlag;
 
 interface FoodGroup {
   category: string;
@@ -49,19 +56,24 @@ export class UserFoodsAdminComponent {
   showingAllNutrients = false;
   showPerServing = true;
 
-  // Filter controls
-  communityCandidateFilterControl = new FormControl<boolean>(false);
+  // Filter controls. 'browse' = per-user lookup; candidate/approved/all = candidates grid.
+  filterModeControl = new FormControl<FilterMode>('browse', { nonNullable: true });
 
-  // Whether currently showing flat candidate list (no category grouping)
-  showingCandidatesFlat = false;
+  // Candidates grid (shown when filterMode is a curation flag, not 'browse').
+  candidateRows: CuratedUserFoodListing[] = [];
+  candidateColumns: string[] = ['authorName', 'authorEmail', 'description', 'regiApprovedCandidate', 'regiApproved', 'createdAt', 'actions'];
+  isLoadingCandidates = false;
 
   // Metadata form controls (mirrors Foods tab)
   shortDescriptionControl = new FormControl<string | null>(null);
   glycemicIndexControl = new FormControl<number | null>(null);
   glycemicLoadControl = new FormControl<number | null>(null);
   categoryControl = new FormControl<number | null>(null);
-  shareCandidateControl = new FormControl<boolean>(false);
-  shareApprovedControl = new FormControl<boolean>(false);
+  regiApprovedCandidateControl = new FormControl<boolean>(false);
+  // RegiApproved is toggled directly against /approve|/demote (optimistic), NOT part of the
+  // Save/PATCH payload. isTogglingApproval guards the in-flight request.
+  regiApprovedControl = new FormControl<boolean>(false);
+  isTogglingApproval = false;
   productPurchaseLinkControl = new FormControl<string | null>(null);
   servingSizeControl = new FormControl<number | null>(null);
   servingUnitControl = new FormControl<string | null>(null);
@@ -88,8 +100,7 @@ export class UserFoodsAdminComponent {
     glycemicLoad: null as number | null,
     categoryId: null as number | null,
     productPurchaseLink: null as string | null,
-    shareCandidate: false,
-    shareApproved: false,
+    regiApprovedCandidate: false,
     servingSize: null as number | null,
     servingUnit: null as string | null,
     servingGramsPerUnit: null as number | null
@@ -104,7 +115,8 @@ export class UserFoodsAdminComponent {
   constructor(
     private apiService: RegiApiService,
     private servingUnits: ServingUnitsService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {
     this.apiService.getCategories().subscribe({
       next: (cats) => {
@@ -169,23 +181,28 @@ export class UserFoodsAdminComponent {
   // USER SEARCH
   // ========================================
 
+  // True when a curation flag (not 'browse') is selected — the candidates grid is showing.
+  get isCandidatesMode(): boolean {
+    return this.filterModeControl.value !== 'browse';
+  }
+
   applyFilters(): void {
     const name = this.nameSearchControl.value?.trim() || '';
     const email = this.emailSearchControl.value?.trim() || '';
-    const communityCandidateOnly = this.communityCandidateFilterControl.value;
+    const mode = this.filterModeControl.value;
 
-    // If only community candidate filter is checked (no name/email), load all candidates
-    if (communityCandidateOnly && !name && !email) {
-      this.loadShareCandidates();
+    if (mode !== 'browse') {
+      this.loadCandidates(mode, name, email);
       return;
     }
 
     if (!name && !email) {
-      this.snackBar.open('Enter a name or email to search, or check Community Candidate', 'Close', { duration: 3000 });
+      this.snackBar.open('Enter a name or email to search, or pick a Candidates / Approved / All filter', 'Close', { duration: 3000 });
       return;
     }
 
-    // Search users, then optionally filter their foods by shareCandidate
+    // Browse mode: search users, then the picked user's foods.
+    this.candidateRows = [];
     this.isSearchingUsers = true;
     this.apiService.searchAdminUsers(name || undefined, email || undefined).subscribe({
       next: (result) => {
@@ -203,34 +220,28 @@ export class UserFoodsAdminComponent {
     });
   }
 
-  private loadShareCandidates(): void {
-    this.isLoadingFoods = true;
+  private loadCandidates(flag: CurationFlag, name: string, email: string): void {
+    // Clear the browse-mode surface so the two views never render at once.
+    this.isLoadingCandidates = true;
     this.selectedUser = null;
     this.userResults = [];
     this.foods = [];
+    this.groupedFoods = [];
     this.selectedFood = null;
-    this.showingCandidatesFlat = true;
 
-    this.apiService.getShareCandidates().subscribe({
+    this.apiService.getCuratedUserFoods(name || undefined, email || undefined, flag).subscribe({
       next: (result) => {
-        this.foods = result.foods || result || [];
-        this.groupedFoods = []; // no grouping for flat candidate list
-        this.isLoadingFoods = false;
-
-        this.snackBar.open(`${this.foods.length} community candidates`, 'Close', {
+        this.candidateRows = result.foods || [];
+        this.isLoadingCandidates = false;
+        this.snackBar.open(`${this.candidateRows.length} results`, 'Close', {
           duration: 3000, horizontalPosition: 'center', verticalPosition: 'top'
         });
-
-        if (this.foods.length > 0) {
-          this.selectedIndex = 0;
-          this.selectedFood = this.foods[0];
-          this.populateMetadataFields(this.selectedFood);
-          this.updateNutrientTableData();
-        }
       },
-      error: () => {
-        this.isLoadingFoods = false;
-        this.snackBar.open('Failed to load candidates', 'Close', { duration: 5000 });
+      error: (err) => {
+        this.isLoadingCandidates = false;
+        this.candidateRows = [];
+        const msg = err.status === 403 ? 'Admin access required' : 'Failed to load candidates';
+        this.snackBar.open(msg, 'Close', { duration: 5000 });
       }
     });
   }
@@ -245,18 +256,10 @@ export class UserFoodsAdminComponent {
     this.foods = [];
     this.selectedFood = null;
     this.groupedFoods = [];
-    this.showingCandidatesFlat = false;
 
     this.apiService.getAdminUserFoods(userId).subscribe({
       next: (result) => {
-        let foodsArray = result.foods || [];
-
-        // Filter by community candidate if checkbox is checked
-        if (this.communityCandidateFilterControl.value) {
-          foodsArray = foodsArray.filter((f: any) => f.shareCandidate);
-        }
-
-        this.foods = foodsArray;
+        this.foods = result.foods || [];
         this.buildGroupedFoods();
         this.isLoadingFoods = false;
 
@@ -336,8 +339,9 @@ export class UserFoodsAdminComponent {
     this.glycemicLoadControl.setValue(food.glycemicLoad ?? null);
     this.categoryControl.setValue(food.categoryId ?? null);
     this.productPurchaseLinkControl.setValue(food.productPurchaseLink ?? null);
-    this.shareCandidateControl.setValue(food.shareCandidate ?? false);
-    this.shareApprovedControl.setValue(food.shareApproved ?? false);
+    this.regiApprovedCandidateControl.setValue(food.regiApprovedCandidate ?? false);
+    // RegiApproved toggle reflects the row; setValue silently so it doesn't fire approve/demote.
+    this.regiApprovedControl.setValue(food.regiApproved ?? false, { emitEvent: false });
     this.servingSizeControl.setValue(food.servingSize ?? null);
     this.servingUnitControl.setValue(food.servingUnit ?? null);
     this.isAddingServingUnit = false;
@@ -351,8 +355,7 @@ export class UserFoodsAdminComponent {
       glycemicLoad: food.glycemicLoad ?? null,
       categoryId: food.categoryId ?? null,
       productPurchaseLink: food.productPurchaseLink ?? null,
-      shareCandidate: food.shareCandidate ?? false,
-      shareApproved: food.shareApproved ?? false,
+      regiApprovedCandidate: food.regiApprovedCandidate ?? false,
       servingSize: food.servingSize ?? null,
       servingUnit: food.servingUnit ?? null,
       servingGramsPerUnit: food.servingGramsPerUnit ?? null
@@ -367,10 +370,101 @@ export class UserFoodsAdminComponent {
     }
   }
 
-  onShareApprovedChange(): void {
-    if (this.shareApprovedControl.value) {
-      this.shareCandidateControl.setValue(false);
+  // Detail-panel RegiApproved toggle: approve/demote the selected food directly (optimistic,
+  // revert on failure). Independent of the Save/PATCH flow. Approving clears the candidate
+  // flag server-side, so mirror that locally.
+  onRegiApprovedToggle(): void {
+    if (!this.selectedFood?.id) { return; }
+    const target = this.regiApprovedControl.value ?? false;
+    const prevApproved = this.selectedFood.regiApproved ?? false;
+    const prevCandidate = this.selectedFood.regiApprovedCandidate ?? false;
+
+    // Optimistic local state.
+    this.selectedFood.regiApproved = target;
+    if (target) {
+      this.selectedFood.regiApprovedCandidate = false;
+      this.regiApprovedCandidateControl.setValue(false);
+      this.originalMetadata.regiApprovedCandidate = false;
     }
+    this.isTogglingApproval = true;
+
+    const call = target
+      ? this.apiService.approveUserFood(this.selectedFood.id)
+      : this.apiService.demoteUserFood(this.selectedFood.id);
+
+    call.subscribe({
+      next: () => {
+        this.isTogglingApproval = false;
+        this.snackBar.open(target ? 'RegiApproved' : 'Demoted', 'Close', { duration: 2000 });
+      },
+      error: () => {
+        this.isTogglingApproval = false;
+        // Revert local + control state (silently, so the revert doesn't re-fire this handler).
+        this.selectedFood.regiApproved = prevApproved;
+        this.selectedFood.regiApprovedCandidate = prevCandidate;
+        this.regiApprovedControl.setValue(prevApproved, { emitEvent: false });
+        this.regiApprovedCandidateControl.setValue(prevCandidate);
+        this.originalMetadata.regiApprovedCandidate = prevCandidate;
+        this.snackBar.open('Failed to update RegiApproved', 'Close', { duration: 5000 });
+      }
+    });
+  }
+
+  // Candidates-grid RegiApproved toggle: same approve/demote flow, per row (optimistic).
+  onCandidateApprovedToggle(row: CuratedUserFoodListing, checked: boolean): void {
+    const prevApproved = row.regiApproved;
+    const prevCandidate = row.regiApprovedCandidate;
+
+    row.regiApproved = checked;
+    if (checked) { row.regiApprovedCandidate = false; }
+
+    const call = checked
+      ? this.apiService.approveUserFood(row.foodId)
+      : this.apiService.demoteUserFood(row.foodId);
+
+    call.subscribe({
+      next: () => this.snackBar.open(checked ? 'RegiApproved' : 'Demoted', 'Close', { duration: 2000 }),
+      error: () => {
+        row.regiApproved = prevApproved;
+        row.regiApprovedCandidate = prevCandidate;
+        this.snackBar.open('Failed to update RegiApproved', 'Close', { duration: 5000 });
+      }
+    });
+  }
+
+  // Delete with usage check — opens the confirm dialog (which fetches /usages and runs the
+  // DELETE, handling a 409 race inline). Removes the row from whichever view it lives in.
+  deleteCandidate(row: CuratedUserFoodListing): void {
+    this.openDeleteDialog({ foodId: row.foodId, description: row.description }, () => {
+      this.candidateRows = this.candidateRows.filter(r => r.foodId !== row.foodId);
+    });
+  }
+
+  deleteSelectedFood(food: any): void {
+    if (!food?.id) { return; }
+    this.openDeleteDialog({ foodId: food.id, description: food.description ?? '' }, () => {
+      const wasSelected = this.selectedFood?.id === food.id;
+      this.foods = this.foods.filter(f => f.id !== food.id);
+      this.buildGroupedFoods();
+      if (wasSelected) {
+        this.selectedFood = this.foods.length ? this.foods[0] : null;
+        this.selectedIndex = 0;
+        if (this.selectedFood) {
+          this.populateMetadataFields(this.selectedFood);
+          this.updateNutrientTableData();
+        }
+      }
+    });
+  }
+
+  private openDeleteDialog(data: DeleteFoodDialogData, onDeleted: () => void): void {
+    this.dialog.open(DeleteFoodDialogComponent, { data, width: '360px', autoFocus: false })
+      .afterClosed().subscribe(deleted => {
+        if (deleted) {
+          onDeleted();
+          this.snackBar.open('Deleted', 'Close', { duration: 2000 });
+        }
+      });
   }
 
   hasMetadataChanges(): boolean {
@@ -379,8 +473,7 @@ export class UserFoodsAdminComponent {
            this.glycemicLoadControl.value !== this.originalMetadata.glycemicLoad ||
            this.categoryControl.value !== this.originalMetadata.categoryId ||
            this.productPurchaseLinkControl.value !== this.originalMetadata.productPurchaseLink ||
-           this.shareCandidateControl.value !== this.originalMetadata.shareCandidate ||
-           this.shareApprovedControl.value !== this.originalMetadata.shareApproved ||
+           this.regiApprovedCandidateControl.value !== this.originalMetadata.regiApprovedCandidate ||
            this.servingSizeControl.value !== this.originalMetadata.servingSize ||
            this.servingUnitControl.value !== this.originalMetadata.servingUnit ||
            this.servingGramsPerUnitControl.value !== this.originalMetadata.servingGramsPerUnit;
@@ -421,14 +514,11 @@ export class UserFoodsAdminComponent {
     if (this.productPurchaseLinkControl.value !== this.originalMetadata.productPurchaseLink) {
       update.productPurchaseLink = this.productPurchaseLinkControl.value === '' ? null : this.productPurchaseLinkControl.value;
     }
-    if (this.shareCandidateControl.value !== this.originalMetadata.shareCandidate) {
-      update.shareCandidate = this.shareCandidateControl.value;
+    if (this.regiApprovedCandidateControl.value !== this.originalMetadata.regiApprovedCandidate) {
+      update.regiApprovedCandidate = this.regiApprovedCandidateControl.value;
     }
 
-    // Handle share approval separately via the approve endpoint
-    const shareApprovalChanged = this.shareApprovedControl.value !== this.originalMetadata.shareApproved;
-
-    const hasMetadataChanges = Object.keys(update).length > 0 || shareApprovalChanged;
+    const hasMetadataChanges = Object.keys(update).length > 0;
 
     if (!hasMetadataChanges && !hasImages) {
       this.snackBar.open('No changes to save', 'Close', { duration: 3000 });
@@ -438,21 +528,16 @@ export class UserFoodsAdminComponent {
     this.isSavingMetadata = true;
 
     try {
-      // Step 1: Update metadata if changed
+      // Step 1: Update metadata if changed. (RegiApproved is handled outside Save, via the
+      // approve/demote toggle.)
       if (Object.keys(update).length > 0) {
         await this.apiService.updateAdminUserFood(this.selectedFood.id, update).toPromise();
-      }
-
-      // Step 2: Approve/reject share if changed
-      if (shareApprovalChanged) {
-        await this.apiService.setShareApproval(this.selectedFood.id, this.shareApprovedControl.value ?? false).toPromise();
-        this.selectedFood.shareApproved = this.shareApprovedControl.value;
-        if (this.shareApprovedControl.value) {
-          this.selectedFood.shareCandidate = false;
+        if ('regiApprovedCandidate' in update) {
+          this.selectedFood.regiApprovedCandidate = this.regiApprovedCandidateControl.value;
         }
       }
 
-      // Step 3: Upload images if staged
+      // Step 2: Upload images if staged
       if (hasImages) {
         const imageSuccess = await this.imageUploadComponent.uploadImages();
         if (!imageSuccess) {
@@ -471,8 +556,7 @@ export class UserFoodsAdminComponent {
         glycemicLoad: this.glycemicLoadControl.value,
         categoryId: this.categoryControl.value,
         productPurchaseLink: this.productPurchaseLinkControl.value,
-        shareCandidate: this.shareCandidateControl.value ?? false,
-        shareApproved: this.shareApprovedControl.value ?? false,
+        regiApprovedCandidate: this.regiApprovedCandidateControl.value ?? false,
         servingSize: this.servingSizeControl.value,
         servingUnit: this.servingUnitControl.value,
         servingGramsPerUnit: this.servingGramsPerUnitControl.value

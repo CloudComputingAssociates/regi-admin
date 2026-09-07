@@ -25,6 +25,10 @@
     max-width: 220px;
   }
 
+  .flag-field {
+    width: 160px;
+  }
+
   .apply-btn {
     margin-top: -12px;
     min-width: 36px;
@@ -388,6 +392,54 @@
 .serving-mode-btn {
   font-size: 12px;
   color: #1976d2;
+}
+
+// ========================================
+// CANDIDATES GRID
+// ========================================
+.candidates-grid {
+  margin-top: 8px;
+}
+
+.candidate-table {
+  width: 100%;
+
+  th.mat-header-cell {
+    font-weight: 600;
+  }
+
+  td.mat-cell,
+  th.mat-header-cell {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .flag-yes {
+    color: #2e7d32;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+}
+
+.empty-state {
+  padding: 24px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+// Per-row delete in the browse list — reveal on row hover to keep the list clean.
+.food-item-content {
+  .row-delete-btn {
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .row-delete-btn {
+    opacity: 1;
+  }
 }
 
 .all-nutrients {
